@@ -5,9 +5,8 @@ class ToolsApp {
         this.tools = [];
         this.categories = {};
         this.currentCategory = 'all';
-        this.currentTheme = localStorage.getItem('theme') || 'light';
         this.searchQuery = '';
-        
+      
         this.init();
     }
 
@@ -163,15 +162,16 @@ class ToolsApp {
 
     // 初始化主题
     initializeTheme() {
-        document.documentElement.setAttribute('data-theme', this.currentTheme);
-        this.updateThemeToggle();
+        // 页面主题由 ThemeManager 在其 constructor 中设置，这里只需更新按钮
+        // ThemeManager 实例化时已经完成了 document.documentElement.setAttribute('data-theme', ...)
+        this.updateThemeToggle(); 
     }
 
     // 更新主题切换按钮
     updateThemeToggle() {
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
-            themeToggle.textContent = this.currentTheme === 'light' ? '🌙' : '☀️';
+            themeToggle.textContent = window.themeManager.theme === 'light' ? '☀️' : '🌙'; // 从 ThemeManager 获取当前主题
         }
     }
 
@@ -367,10 +367,10 @@ class ToolsApp {
 
     // 切换主题
     toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', this.currentTheme);
-        localStorage.setItem('theme', this.currentTheme);
-        this.updateThemeToggle();
+        if (window.themeManager) { // 确保 ThemeManager 实例存在
+            window.themeManager.toggle(); // 调用 ThemeManager 的切换方法
+            this.updateThemeToggle(); // 切换后更新按钮图标
+        }
     }
 
     // 处理搜索
@@ -470,14 +470,9 @@ const AppUtils = {
 
 // 应用初始化
 document.addEventListener('DOMContentLoaded', () => {
-    // 创建应用实例
-    window.app = new ToolsApp();
-    
+    window.themeManager = new ThemeManager(); // 首先实例化 ThemeManager
+    window.app = new ToolsApp(); // 然后实例化 ToolsApp，此时 themeManager 已可用
+  
     // 将工具函数暴露到全局
     window.AppUtils = AppUtils;
 });
-
-// 导出模块（如果需要）
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ToolsApp, AppUtils };
-}
