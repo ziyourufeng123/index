@@ -44,11 +44,18 @@
     "maxFileSize": "10MB"
   },
   "seo": {
-    "title": "Web工具集 - 免费实用的在线工具平台",
-    "description": "发现最实用的Web工具，提升您的工作效率。包含图像处理、文本处理、格式转换等多种实用工具。",
+    "title": "Web工具集：免费在线效率工具大全 - 图片处理、文本处理、格式转换、效率工具",
+    "description": "一站式免费在线Web工具平台，发现最实用的Web工具。包含图像处理、文本处理、格式转换等多种实用工具。",
     "keywords": "免费工具,Web工具, 在线工具, 图像处理, 文本处理, 格式转换, 效率工具",
+    "canonicalUrl": "https://ziyourufeng.eu.org/", 
+
+    "ogTitle": "Web工具集：免费在线工具大全", 
+    "ogDescription": "一站式免费在线Web工具平台，助您轻松完成图像/文本处理等。", 
+    "ogUrl": "https://ziyourufeng.eu.org/", 
     "ogImage": "/assets/images/logo.png",
-    "twitterCard": "summary_large_image"
+    "twitterCard": "summary_large_image",
+
+    "favicon": "/assets/images/favicon.ico"
   },
   "external": {
     "googleAnalytics": "",

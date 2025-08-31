@@ -72,7 +72,7 @@ class ToolsApp {
             document.title = seoConfig.title;
         }
 
-        // 更新或创建meta标签
+        // 辅助函数：更新或创建meta标签
         const updateMeta = (name, content, isProperty = false) => {
             let meta = document.querySelector(`meta[${isProperty ? 'property' : 'name'}="${name}"]`);
             if (!meta) {
@@ -83,19 +83,83 @@ class ToolsApp {
             meta.setAttribute('content', content);
         };
 
+        // 辅助函数：更新或创建link标签 (用于canonical和favicon)
+        const updateLink = (rel, href, type = null) => {
+            let link = document.querySelector(`link[rel="${rel}"]`);
+            if (!link) {
+                link = document.createElement('link');
+                link.setAttribute('rel', rel);
+                if (type) link.setAttribute('type', type); // 有些link标签可能需要type
+                document.head.appendChild(link);
+            }
+            link.setAttribute('href', href);
+        };
+
+        // --- 标准 Meta 标签 ---
         if (seoConfig.description) {
             updateMeta('description', seoConfig.description);
         }
         if (seoConfig.keywords) {
             updateMeta('keywords', seoConfig.keywords);
         }
-        if (seoConfig.ogImage) {
-            updateMeta('og:image', seoConfig.ogImage, true);
+
+        // --- Canonical URL ---
+        // 🚨 注意：canonicalUrl 必须是绝对路径。您的app.json中已正确设置为绝对路径。
+        if (seoConfig.canonicalUrl) {
+            updateLink('canonical', seoConfig.canonicalUrl);
         }
+
+        // --- Open Graph Meta 标签 (社交媒体分享) ---
+        // og:title: 优先使用独立的ogTitle，否则使用document.title
+        if (seoConfig.ogTitle) {
+            updateMeta('og:title', seoConfig.ogTitle, true);
+        } else if (seoConfig.title) { // Fallback to page title
+             updateMeta('og:title', seoConfig.title, true);
+        }
+        
+        // og:description: 优先使用独立的ogDescription，否则使用meta description
+        if (seoConfig.ogDescription) {
+            updateMeta('og:description', seoConfig.ogDescription, true);
+        } else if (seoConfig.description) { // Fallback to meta description
+             updateMeta('og:description', seoConfig.description, true);
+        }
+
+        // og:url: 优先使用ogUrl，否则使用canonicalUrl，都不是则使用当前页面URL
+        if (seoConfig.ogUrl) {
+            updateMeta('og:url', seoConfig.ogUrl, true);
+        } else if (seoConfig.canonicalUrl) { // Fallback to canonical URL
+            updateMeta('og:url', seoConfig.canonicalUrl, true);
+        } else { // Fallback to current window URL
+            updateMeta('og:url', window.location.href, true);
+        }
+        
+        // og:image
+        if (seoConfig.ogImage) {
+            // 确保ogImage是绝对路径，尤其是当它在app.json中是相对路径时
+            // 这里假设seoConfig.ogImage在app.json中是相对路径或者绝对路径都可以
+            // 如果它总是相对根目录的，比如/assets/images/logo.png，那么它可以直接使用
+            // 如果你希望它相对于canonicalUrl，可能需要更复杂的拼接逻辑，但通常ogImage直接用/开头即可
+            updateMeta('og:image', `${window.location.protocol}//${window.location.host}${seoConfig.ogImage}`, true); // 确保是绝对路径
+        }
+
+        // --- Twitter Card Meta 标签 (Twitter 分享) ---
         if (seoConfig.twitterCard) {
             updateMeta('twitter:card', seoConfig.twitterCard);
         }
+        // twitter:title, twitter:description, twitter:image 通常会自动从og标签继承
+        // 但也可以独立设置，如果需要，按ogTitle/ogDescription/ogImage的方式添加即可。
+        // 目前app.json中没有单独的twitterTitle/twitterDescription，所以可以不加。
+
+        // --- Favicon ---
+        if (seoConfig.favicon) {
+            // 确保favicon的href是正确的路径。
+            // 假设favicon也是相对于根目录的，例如 /assets/images/favicon.ico
+            updateLink('icon', seoConfig.favicon);
+            // 对于apple-touch-icon （用于iOS主屏幕图标），如果需要也可以添加
+            // updateLink('apple-touch-icon', seoConfig.appleTouchIcon || seoConfig.favicon);
+        }
     }
+
 
     // 初始化主题
     initializeTheme() {
