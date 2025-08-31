@@ -31,7 +31,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ziyourufeng.eu.org/categories/ai/</loc>
+    <loc>https://ziyourufeng.eu.org/categories/interesting/</loc>
     <lastmod>2025-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -49,13 +49,13 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ziyourufeng.eu.org/tools/image/compressor/</loc>
+    <loc>https://ziyourufeng.eu.org/https://free-ps.ziyourufeng.eu.org/</loc>
     <lastmod>2025-08-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ziyourufeng.eu.org/tools/image/resizer/</loc>
+    <loc>https://ziyourufeng.eu.org/https://win12.ziyourufeng.eu.org/</loc>
     <lastmod>2025-08-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -139,6 +139,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ziyourufeng.eu.org/https://markdown.ziyourufeng.eu.org/</loc>
+    <lastmod>2025-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ziyourufeng.eu.org/tools/text/markdown-editor/</loc>
     <lastmod>2025-08-31</lastmod>
     <changefreq>monthly</changefreq>
@@ -182,6 +188,18 @@
   </url>
   <url>
     <loc>https://ziyourufeng.eu.org/tools/text/text-diff/</loc>
+    <lastmod>2025-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ziyourufeng.eu.org/tools/image/compressor/</loc>
+    <lastmod>2025-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ziyourufeng.eu.org/tools/image/resizer/</loc>
     <lastmod>2025-08-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
