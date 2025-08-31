@@ -20,10 +20,10 @@
       "icon": "🔄",
       "description": "文件格式转换工具"
     },
-    "ai": {
-      "name": "AI生成",
+    "interesting": {
+      "name": "创意体验",
       "icon": "🤖",
-      "description": "AI驱动的创意工具"
+      "description": "体验最新的创意工具"
     },
     "utility": {
       "name": "实用工具",
@@ -37,27 +37,27 @@
     }
   },
   "tools": [
-    {
+    {      
       "id": 1,
-      "name": "压缩图像文件",
-      "description": "压缩JPG、PNG、SVG、以及GIF，同时节省空间，保持质量。",
-      "icon": "🗜️",
+      "name": "在线PS",
+      "description": "无需安装软件，直接在浏览器离线中进行图片编辑和处理，所有数据在本地处理，无需担心隐私泄露。",
+      "icon": "🥳",
       "iconColor": "#10B981",
       "category": "image",
-      "isNew": false,
-      "url": "./tools/image/compressor/index.html",
+      "isNew": true,
+      "url": "https://free-ps.ziyourufeng.eu.org/",
       "author": "官方",
       "version": "1.0.0"
     },
     {
       "id": 2,
-      "name": "调整图像的大小",
-      "description": "按照百分比或像素来定义尺寸，并调整JPG、PNG、SVG和GIF图片的尺寸。",
-      "icon": "📏",
-      "iconColor": "#3B82F6",
-      "category": "image",
-      "isNew": false,
-      "url": "./tools/image/resizer/index.html",
+      "name": "Win12网页版",
+      "description": "在浏览器中体验Windows 12的界面和功能。",
+      "icon": "🖥️",
+      "iconColor": "#7C3AED",
+      "category": "interesting",
+      "isNew": true,
+      "url": "https://win12.ziyourufeng.eu.org/",
       "author": "官方",
       "version": "1.0.0"
     },
@@ -219,18 +219,30 @@
     },
     {
       "id": 20,
-      "name": "Markdown编辑器",
-      "description": "支持实时预览的Markdown编辑器，可导出文档和复制HTML。",
+      "name": "Markdown编辑器(New)",
+      "description": "支持实时预览的Markdown编辑器,包含语法快捷按钮,可导出PDF、PNG和HTML。",
       "icon": "📝",
       "iconColor": "#6366F1",
       "category": "text",
       "isNew": true,
-      "url": "./tools/text/markdown-editor/index.html",
+      "url": "https://markdown.ziyourufeng.eu.org/",
       "author": "官方",
       "version": "1.0.0"
     },
     {
       "id": 21,
+      "name": "Markdown编辑器",
+      "description": "支持实时预览的Markdown编辑器，可导出文档和复制HTML。",
+      "icon": "📝",
+      "iconColor": "#6366F1",
+      "category": "text",
+      "isNew": false,
+      "url": "./tools/text/markdown-editor/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": 22,
       "name": "文字加密解密",
       "description": "支持URL编码、Base64、MD5、SHA1、SHA256等多种加密解密方式。",
       "icon": "🔐",
@@ -242,7 +254,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 22,
+      "id": 23,
       "name": "Hex转字符串",
       "description": "十六进制编码与文本字符串的相互转换，支持多种编码格式。",
       "icon": "🔄",
@@ -254,7 +266,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 23,
+      "id": 24,
       "name": "摩斯电码",
       "description": "摩斯电码与文本的相互转换，支持音频播放和可视化显示。",
       "icon": "📡",
@@ -266,7 +278,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 24,
+      "id": 25,
       "name": "中文简繁体转换",
       "description": "中文简体字与繁体字的相互转换，支持批量处理。",
       "icon": "🈳",
@@ -278,7 +290,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 25,
+      "id": 26,
       "name": "数字转大写",
       "description": "阿拉伯数字转换为中文大写数字，支持金额格式。",
       "icon": "🔢",
@@ -290,7 +302,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 26,
+      "id": 27,
       "name": "ASCII表格生成",
       "description": "生成ASCII表格和Markdown表格，支持自定义格式。",
       "icon": "📊",
@@ -302,7 +314,7 @@
       "version": "1.0.0"
     },
     {
-      "id": 27,
+      "id": 28,
       "name": "文本对比",
       "description": "比较两个文本的差异，高亮显示不同之处。",
       "icon": "🔍",
@@ -310,6 +322,30 @@
       "category": "text",
       "isNew": true,
       "url": "./tools/text/text-diff/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },    
+    {
+      "id": 29,
+      "name": "压缩图像文件",
+      "description": "压缩JPG、PNG、SVG、以及GIF，同时节省空间，保持质量。",
+      "icon": "🗜️",
+      "iconColor": "#10B981",
+      "category": "image",
+      "isNew": false,
+      "url": "./tools/image/compressor/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": 30,
+      "name": "调整图像的大小",
+      "description": "按照百分比或像素来定义尺寸，并调整JPG、PNG、SVG和GIF图片的尺寸。",
+      "icon": "📏",
+      "iconColor": "#3B82F6",
+      "category": "image",
+      "isNew": false,
+      "url": "./tools/image/resizer/index.html",
       "author": "官方",
       "version": "1.0.0"
     }
