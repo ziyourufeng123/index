@@ -52,10 +52,10 @@
     "ogTitle": "Web工具集：免费在线工具大全", 
     "ogDescription": "一站式免费在线Web工具平台，助您轻松完成图像/文本处理等。", 
     "ogUrl": "https://ziyourufeng.eu.org/", 
-    "ogImage": "/assets/images/logo.png",
+    "ogImage": "/assets/image/logo.png",
     "twitterCard": "summary_large_image",
 
-    "favicon": "/assets/images/favicon.ico"
+    "favicon": "/assets/image/favicon.ico"
   },
   "external": {
     "googleAnalytics": "",
