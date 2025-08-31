@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "Web工具集",
+    "version": "1.0.0",
+    "description": "智能工具平台",
+    "author": "Web工具集团队",
+    "keywords": [ "工具", "效率", "在线工具"],
+    "homepage": "https://ziyourufeng.eu.org",
+    "repository": "https://github.com/ziyourufeng123/index",
+    "license": "MIT"
+  },
+  "theme": {
+    "default": "light",
+    "colors": {
+      "primary": "#4d90fe",
+      "secondary": "#5B6AFF",
+      "accent": "#667EEA",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "danger": "#EF4444",
+      "info": "#3B82F6"
+    }
+  },
+  "features": {
+    "darkMode": true,
+    "search": true,
+    "categories": true,
+    "favorites": false,
+    "analytics": false,
+    "pwa": false
+  },
+  "layout": {
+    "sidebarWidth": 240,
+    "headerHeight": 60,
+    "maxWidth": 1200,
+    "cardMinWidth": 280,
+    "gridGap": 24
+  },
+  "performance": {
+    "enableLazyLoading": true,
+    "enableCompression": true,
+    "enableCaching": true,
+    "maxImageSize": "2MB",
+    "maxFileSize": "10MB"
+  },
+  "seo": {
+    "title": "Web工具集 - 免费实用的在线工具平台",
+    "description": "发现最实用的Web工具，提升您的工作效率。包含图像处理、文本处理、格式转换等多种实用工具。",
+    "keywords": "免费工具,Web工具, 在线工具, 图像处理, 文本处理, 格式转换, 效率工具",
+    "ogImage": "/assets/images/logo.png",
+    "twitterCard": "summary_large_image"
+  },
+  "external": {
+    "googleAnalytics": "",
+    "baiduAnalytics": "",
+    "cdnPrefix": ""
+  },
+  "development": {
+    "debug": false,
+    "hotReload": false,
+    "sourceMap": false
+  }
+}
