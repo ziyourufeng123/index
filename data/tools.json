@@ -63,13 +63,25 @@
     },
     {
       "id": 3,
-      "name": "裁剪图片",
-      "description": "通过设定像素来裁剪图像文件。裁剪JPG文件、PNG文件或GIF图像文件。",
+      "name": "视频剪辑",
+      "description": "通过您的电脑或手机编辑您的视频，无需下载、无需注册、无水印。在线、免费、开源",
       "icon": "✂️",
       "iconColor": "#06B6D4",
-      "category": "image",
-      "isNew": false,
-      "url": "./tools/image/cropper/index.html",
+      "category": "utility",
+      "isNew": true,
+      "url": "https://clip.ziyourufeng.eu.org/",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": 3,
+      "name": "ffmpeg在线图像视频转换",
+      "description": "使用强大的ffmpeg工具在线转换和处理图像与视频文件，支持多种格式和功能。",
+      "icon": "🎬",
+      "iconColor": "#FBBF24",
+      "category": "utility",
+      "isNew": true,
+      "url": "https://ffmpeg.ziyourufeng.eu.org/",
       "author": "官方",
       "version": "1.0.0"
     },
@@ -346,6 +358,18 @@
       "category": "image",
       "isNew": false,
       "url": "./tools/image/resizer/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": 31,
+      "name": "裁剪图片",
+      "description": "通过设定像素来裁剪图像文件。裁剪JPG文件、PNG文件或GIF图像文件。",
+      "icon": "✂️",
+      "iconColor": "#06B6D4",
+      "category": "image",
+      "isNew": false,
+      "url": "./tools/image/cropper/index.html",
       "author": "官方",
       "version": "1.0.0"
     }
