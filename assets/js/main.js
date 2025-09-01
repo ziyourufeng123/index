@@ -492,6 +492,15 @@ class ToolsApp {
                 // 使用 marked.js 转换为 HTML
                 aboutPageContent.innerHTML = marked.parse(markdown);
 
+                // 初始化 Twikoo 评论系统
+                if (window.twikoo) {
+                    twikoo.init({
+                        envId: 'https://twikoo.ziyourufeng.eu.org/', // 腾讯云环境填 envId；Vercel 环境填地址（https://xxx.vercel.app）
+                        el: '#tcomment', // 容器元素
+                        lang: 'zh-CN', // 用于手动设定评论区语言
+                    });
+                }
+
                 // 更新关于按钮为返回主页按钮
                 const aboutButton = document.getElementById('aboutButton');
                 if (aboutButton) {
