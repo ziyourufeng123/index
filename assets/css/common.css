@@ -2244,6 +2244,21 @@ textarea.form-control {
     
     .sidebar {
         display: none;
+        /* 默认隐藏，并通过transform实现动画 */
+        transform: translateX(-100%);
+        transition: transform var(--transition-normal) ease-out;
+        position: fixed; /* 确保在移动端可以覆盖内容 */
+        top: 60px; /* 假设header高度为60px */
+        left: 0;
+        width: 240px; /* 侧边栏宽度 */
+        height: calc(100vh - 60px); /* 减去header高度 */
+        z-index: var(--z-fixed); /* 确保在其他内容之上 */
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar.mobile-open {
+        display: block; /* 展开时显示 */
+        transform: translateX(0); /* 展开时移动到可见位置 */
     }
     
     .mobile-menu-btn {
@@ -3901,5 +3916,4 @@ textarea.form-control {
     .result-container {
         display: block;
     }
-} 
-    
+}
