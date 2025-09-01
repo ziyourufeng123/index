@@ -6,6 +6,7 @@ class ToolsApp {
         this.categories = {};
         this.currentCategory = 'all';
         this.searchQuery = '';
+        this.aboutPage = null; // 用于存储关于页面配置
       
         this.init();
     }
@@ -19,8 +20,10 @@ class ToolsApp {
             this.initializeTheme();
             this.renderNavigation();
             this.renderTools();
+            this.renderAboutButton(); // 渲染关于按钮
             this.bindEventListeners();
             this.updateCounts();
+            this.handleRouting(); // 处理路由
         } catch (error) {
             console.error('初始化应用失败:', error);
             this.showError('应用加载失败，请刷新页面重试');
@@ -175,6 +178,27 @@ class ToolsApp {
         }
     }
 
+    // 渲染关于按钮
+    renderAboutButton() {
+        const headerActions = document.querySelector('.header-actions');
+        if (!headerActions || !this.config.pages || !this.config.pages.about) return;
+
+        this.aboutPage = this.config.pages.about;
+
+        const aboutButton = document.createElement('button');
+        aboutButton.id = 'aboutButton';
+        aboutButton.className = 'theme-toggle'; // 复用 theme-toggle 的样式
+        aboutButton.innerHTML = `${this.aboutPage.icon} ${this.aboutPage.name}`;
+        
+        // 将关于按钮插入到 theme-toggle 之前
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            headerActions.insertBefore(aboutButton, themeToggle);
+        } else {
+            headerActions.appendChild(aboutButton);
+        }
+    }
+
     // 渲染导航
     renderNavigation() {
         const navList = document.getElementById('navList');
@@ -246,8 +270,13 @@ class ToolsApp {
     renderTools() {
         const toolsGrid = document.getElementById('toolsGrid');
         const emptyState = document.getElementById('emptyState');
+        const aboutPageContent = document.getElementById('aboutPageContent');
         
-        if (!toolsGrid || !emptyState) return;
+        if (!toolsGrid || !emptyState || !aboutPageContent) return;
+
+        // 隐藏关于页面，显示工具网格
+        aboutPageContent.style.display = 'none';
+        toolsGrid.style.display = 'grid';
 
         // 过滤工具
         const filteredTools = this.tools.filter(tool => {
@@ -320,6 +349,19 @@ class ToolsApp {
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
+
+        // 关于页面按钮 (只绑定一次事件监听)
+        const aboutButton = document.getElementById('aboutButton');
+        if (aboutButton) {
+            aboutButton.addEventListener('click', () => {
+                // 根据当前按钮的文本判断是显示关于页面还是返回主页
+                if (aboutButton.innerHTML.includes(this.aboutPage.name)) {
+                    this.handleAboutClick();
+                } else {
+                    this.handleHomeClick();
+                }
+            });
         }
 
         // 搜索功能
@@ -400,6 +442,12 @@ class ToolsApp {
                 sidebar.classList.remove('mobile-open');
             }
         }
+
+        // 如果当前是关于页面，切换到工具页面
+        if (window.location.hash === '#about') {
+            window.history.pushState({}, '', '/');
+            this.handleRouting();
+        }
     }
 
     // 切换移动端菜单
@@ -418,6 +466,71 @@ class ToolsApp {
     // 显示错误
     showError(message) {
         AppUtils.showError(message);
+    }
+
+    // 处理关于页面点击
+    async handleAboutClick() {
+        if (!this.aboutPage) return;
+
+        // 隐藏工具网格和空状态
+        document.getElementById('toolsGrid').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        
+        // 显示关于页面容器
+        const aboutPageContent = document.getElementById('aboutPageContent');
+        if (aboutPageContent) {
+            aboutPageContent.style.display = 'block';
+            
+            // 加载 Markdown 内容
+            try {
+                const response = await fetch(this.aboutPage.path);
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+                }
+                const markdown = await response.text();
+                
+                // 使用 marked.js 转换为 HTML
+                aboutPageContent.innerHTML = marked.parse(markdown);
+
+                // 更新关于按钮为返回主页按钮
+                const aboutButton = document.getElementById('aboutButton');
+                if (aboutButton) {
+                    aboutButton.innerHTML = '🏠 主页'; // 或者其他表示返回主页的图标和文本
+                }
+
+            } catch (error) {
+                console.error('加载或转换关于页面失败:', error);
+                this.showError('无法加载关于页面内容');
+                aboutPageContent.innerHTML = `<p class="text-danger">加载关于页面失败: ${error.message}</p>`;
+            }
+        }
+    }
+
+    // 处理返回主页点击
+    handleHomeClick() {
+        this.renderToolsPage(); // 重新渲染工具页面
+    }
+
+    // 处理路由
+    handleRouting() {
+        // 默认显示工具页面
+        this.renderToolsPage();
+    }
+
+    // 渲染工具页面
+    renderToolsPage() {
+        document.getElementById('toolsGrid').style.display = 'grid';
+        document.getElementById('emptyState').style.display = 'none';
+        const aboutPageContent = document.getElementById('aboutPageContent');
+        if (aboutPageContent) {
+            aboutPageContent.style.display = 'none';
+        }
+
+        // 恢复关于按钮为原始状态
+        const aboutButton = document.getElementById('aboutButton');
+        if (aboutButton && this.aboutPage) {
+            aboutButton.innerHTML = `${this.aboutPage.icon} ${this.aboutPage.name}`;
+        }
     }
 }
 

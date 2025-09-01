@@ -66,5 +66,12 @@
     "debug": false,
     "hotReload": false,
     "sourceMap": false
+  },
+  "pages": {
+    "about": {
+      "name": "关于",
+      "path": "docs/about.md",
+      "icon": "ℹ️"
+    }
   }
 }
