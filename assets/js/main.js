@@ -490,7 +490,7 @@ class ToolsApp {
                 const markdown = await response.text();
                 
                 // 使用 marked.js 转换为 HTML
-                aboutPageContent.innerHTML = marked.parse(markdown);
+                document.getElementById('markdownRenderedContent').innerHTML = marked.parse(markdown);
 
                 // 初始化 Twikoo 评论系统
                 if (window.twikoo) {
