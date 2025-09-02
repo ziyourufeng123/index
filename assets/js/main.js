@@ -315,18 +315,11 @@ class ToolsApp {
             return;
         }
 
-        // 添加全部工具导航
-        if (this.categories.all) {
-            const allItem = this.createNavItem('all', this.getTranslation('all_tools'), this.categories.all.icon); // 使用翻译后的文本
-            navList.appendChild(allItem);
-        }
-
-        // 添加其他分类导航
+        // 添加分类导航
         Object.entries(this.categories).forEach(([key, category]) => {
-            if (key !== 'all') {
-                const navItem = this.createNavItem(key, category.name, category.icon);
-                navList.appendChild(navItem);
-            }
+            const categoryName = this.currentLang === 'en' && category.name_en ? category.name_en : category.name;
+            const navItem = this.createNavItem(key, categoryName, category.icon);
+            navList.appendChild(navItem);
         });
     }
 
@@ -339,13 +332,12 @@ class ToolsApp {
         a.href = '#';
         a.className = `nav-link ${category === this.currentCategory ? 'active' : ''}`;
         a.dataset.category = category;
-        a.dataset.i18n = category === 'all' ? 'all_tools' : `category_${category}`; // 为分类导航添加i18n属性
 
         const count = this.getToolsCount(category);
         
         a.innerHTML = `
             <span class="nav-icon">${icon}</span>
-            <span>${this.getTranslation(a.dataset.i18n)}</span>
+            <span>${name}</span>
             <span class="nav-count">${count}</span>
         `;
 
@@ -386,9 +378,12 @@ class ToolsApp {
         // 过滤工具
         const filteredTools = this.tools.filter(tool => {
             const matchesCategory = this.currentCategory === 'all' || tool.category === this.currentCategory;
+            const lowerCaseQuery = this.searchQuery.toLowerCase();
             const matchesSearch = this.searchQuery === '' || 
-                tool.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                tool.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+                tool.name.toLowerCase().includes(lowerCaseQuery) ||
+                (tool.name_en && tool.name_en.toLowerCase().includes(lowerCaseQuery)) ||
+                tool.description.toLowerCase().includes(lowerCaseQuery) ||
+                (tool.description_en && tool.description_en.toLowerCase().includes(lowerCaseQuery));
             return matchesCategory && matchesSearch;
         });
 
@@ -415,13 +410,16 @@ class ToolsApp {
         card.className = 'tools-item';
         card.href = '#';
         
+        const toolName = this.currentLang === 'en' && tool.name_en ? tool.name_en : tool.name;
+        const toolDescription = this.currentLang === 'en' && tool.description_en ? tool.description_en : tool.description;
+
         card.innerHTML = `
             <div class="tools-item-icon" style="background-color: ${tool.iconColor}20; color: ${tool.iconColor}">
                 ${tool.icon}
             </div>
-            <h3>${tool.name}</h3>
+            <h3>${toolName}</h3>
             <div class="tools-item-content">
-                <p>${tool.description}</p>
+                <p>${toolDescription}</p>
                 <div class="tools-item-badges">
                     ${tool.isNew ? `<span class="tools-item-badge new">${this.getTranslation('new_feature')}</span>` : ''}
                     ${tool.author === '官方' ? `<span class="tools-item-badge">${this.getTranslation('official')}</span>` : ''}

@@ -2,36 +2,43 @@
   "categories": {
     "all": {
       "name": "全部工具",
+      "name_en": "All Tools",
       "icon": "🏠",
       "description": "所有可用工具"
     },
     "image": {
       "name": "图像处理",
+      "name_en": "Image Processing",
       "icon": "🖼️",
       "description": "图像编辑、压缩、格式转换工具"
     },
     "text": {
       "name": "文本处理",
+      "name_en": "Text Processing",
       "icon": "📝",
       "description": "文本编辑、格式化、分析工具"
     },
     "converter": {
       "name": "格式转换",
+      "name_en": "Converter",
       "icon": "🔄",
       "description": "文件格式转换工具"
     },
     "interesting": {
       "name": "创意体验",
+      "name_en": "Creative Experience",
       "icon": "🤖",
       "description": "体验最新的创意工具"
     },
     "utility": {
       "name": "实用工具",
+      "name_en": "Utilities",
       "icon": "🛠️",
       "description": "日常使用的实用工具"
     },
     "custom": {
       "name": "原创工具",
+      "name_en": "Original Tools",
       "icon": "⭐",
       "description": "自主开发的原创工具"
     }
@@ -40,7 +47,9 @@
     {      
       "id": 1,
       "name": "在线PS",
+      "name_en": "Online PS",
       "description": "无需安装软件，直接在浏览器离线中进行图片编辑和处理，所有数据在本地处理，无需担心隐私泄露。",
+      "description_en": "Edit and process images directly in your browser offline without installing software. All data is processed locally, so there's no need to worry about privacy leaks.",
       "icon": "🥳",
       "iconColor": "#10B981",
       "category": "image",
@@ -52,7 +61,9 @@
     {
       "id": 2,
       "name": "Win12网页版",
+      "name_en": "Win12 Web Edition",
       "description": "在浏览器中体验Windows 12的界面和功能。",
+      "description_en": "Experience the interface and features of Windows 12 in your browser.",
       "icon": "🖥️",
       "iconColor": "#7C3AED",
       "category": "interesting",
@@ -64,7 +75,9 @@
     {
       "id": 3,
       "name": "视频剪辑",
+      "name_en": "Video Editor",
       "description": "通过您的电脑或手机编辑您的视频，无需下载、无需注册、无水印。在线、免费、开源",
+      "description_en": "Edit your videos on your computer or phone without downloading, registration, or watermarks. Online, free, and open source.",
       "icon": "✂️",
       "iconColor": "#06B6D4",
       "category": "utility",
@@ -76,7 +89,9 @@
     {
       "id": 3,
       "name": "ffmpeg在线图像视频转换",
+      "name_en": "FFmpeg Online Image/Video Converter",
       "description": "使用强大的ffmpeg工具在线转换和处理图像与视频文件，支持多种格式和功能。",
+      "description_en": "Use the powerful ffmpeg tool to convert and process image and video files online, with support for multiple formats and functions.",
       "icon": "🎬",
       "iconColor": "#FBBF24",
       "category": "utility",
@@ -88,7 +103,9 @@
     {
       "id": 4,
       "name": "转换至JPG文件",
+      "name_en": "Convert to JPG",
       "description": "轻松地把其他格式PNG、GIF、TIF、PSD、SVG、WEBP、HEIC、或者原始格式的图片至JPG格式。",
+      "description_en": "Easily convert images from other formats like PNG, GIF, TIF, PSD, SVG, WEBP, HEIC, or raw formats to JPG.",
       "icon": "🔄",
       "iconColor": "#F59E0B",
       "category": "converter",
@@ -100,7 +117,9 @@
     {
       "id": 5,
       "name": "JPG文件转换至",
+      "name_en": "Convert from JPG",
       "description": "转换JPG图像文件至PNG文件或GIF文件。用多个JPG文件创建一个GIF动画文件！",
+      "description_en": "Convert JPG image files to PNG or GIF files. Create an animated GIF from multiple JPG files!",
       "icon": "📁",
       "iconColor": "#FBBF24",
       "category": "converter",
@@ -112,7 +131,9 @@
     {
       "id": 6,
       "name": "照片编辑器",
+      "name_en": "Photo Editor",
       "description": "利用文字、效果、镜像或贴纸，让图片更加生动有趣。使用简便的编辑工具，满足你的创意需求。",
+      "description_en": "Make your pictures more vivid and interesting with text, effects, mirrors, or stickers. Use simple editing tools to meet your creative needs.",
       "icon": "🎨",
       "iconColor": "#8B5CF6",
       "category": "image",
@@ -124,7 +145,9 @@
     {
       "id": 8,
       "name": "去除背景",
+      "name_en": "Background Remover",
       "description": "快速删除图像的背景，并保持高质量。快速检测到目标，并轻松地处理背景。",
+      "description_en": "Quickly remove the background of an image while maintaining high quality. Detects the subject quickly and handles the background with ease.",
       "icon": "🌿",
       "iconColor": "#059669",
       "category": "image",
@@ -136,7 +159,9 @@
     {
       "id": 9,
       "name": "给图片加水印",
+      "name_en": "Add Watermark",
       "description": "快速给你的图片加上图像或文字水印。选择样式、透明度和位置。",
+      "description_en": "Quickly add an image or text watermark to your pictures. Choose the style, transparency, and position.",
       "icon": "🔐",
       "iconColor": "#1E40AF",
       "category": "image",
@@ -148,7 +173,9 @@
     {
       "id": 11,
       "name": "旋转一个图片",
+      "name_en": "Rotate Image",
       "description": "同时旋转多个JPG、PNG或GIF图片。每次只旋转其中数量的图片！",
+      "description_en": "Rotate multiple JPG, PNG, or GIF images at the same time. Rotate only a certain number of them at a time!",
       "icon": "🔄",
       "iconColor": "#0891B2",
       "category": "image",
@@ -160,7 +187,9 @@
     {
       "id": 17,
       "name": "高级文字计数器",
+      "name_en": "Advanced Word Counter",
       "description": "专业的文本分析工具，支持词频统计、语言检测、阅读时间估算等高级功能。",
+      "description_en": "A professional text analysis tool that supports advanced features like word frequency statistics, language detection, and reading time estimation.",
       "icon": "📊",
       "iconColor": "#8B5CF6",
       "category": "custom",
@@ -172,7 +201,9 @@
     {
       "id": 14,
       "name": "颜色选择器",
+      "name_en": "Color Picker",
       "description": "选择和转换颜色格式，支持HEX、RGB、HSL等多种格式，生成调色板。",
+      "description_en": "Select and convert color formats, with support for various formats like HEX, RGB, HSL, and generate color palettes.",
       "icon": "🎨",
       "iconColor": "#667EEA",
       "category": "custom",
@@ -184,7 +215,9 @@
     {
       "id": 15,
       "name": "二维码生成器",
+      "name_en": "QR Code Generator",
       "description": "快速生成各种类型的二维码，支持文本、链接、WiFi、邮箱等多种格式。",
+      "description_en": "Quickly generate various types of QR codes, with support for formats like text, links, WiFi, and email.",
       "icon": "📱",
       "iconColor": "#10B981",
       "category": "custom",
@@ -196,7 +229,9 @@
     {
       "id": 16,
       "name": "JSON格式化",
+      "name_en": "JSON Formatter",
       "description": "格式化、验证、压缩和美化JSON数据，提供详细的数据结构分析。",
+      "description_en": "Format, validate, compress, and beautify JSON data, providing detailed data structure analysis.",
       "icon": "🔧",
       "iconColor": "#F59E0B",
       "category": "custom",
@@ -208,7 +243,9 @@
     {
       "id": 18,
       "name": "PDF转JPG",
+      "name_en": "PDF to JPG",
       "description": "提取PDF文档中的所有图像文件，或将每一页转换为JPG图片。",
+      "description_en": "Extract all image files from a PDF document, or convert each page to a JPG image.",
       "icon": "📄",
       "iconColor": "#EF4444",
       "category": "converter",
@@ -220,7 +257,9 @@
     {
       "id": 19,
       "name": "JPG转PDF",
+      "name_en": "JPG to PDF",
       "description": "将您的图片转换为PDF文档，还可以调整方向和边距。",
+      "description_en": "Convert your images to a PDF document, with options to adjust orientation and margins.",
       "icon": "🖼️",
       "iconColor": "#10B981",
       "category": "converter",
@@ -232,7 +271,9 @@
     {
       "id": 20,
       "name": "Markdown编辑器(New)",
+      "name_en": "Markdown Editor (New)",
       "description": "支持实时预览的Markdown编辑器,包含语法快捷按钮,可导出PDF、PNG和HTML。",
+      "description_en": "A Markdown editor with real-time preview, including syntax shortcut buttons, and the ability to export to PDF, PNG, and HTML.",
       "icon": "📝",
       "iconColor": "#6366F1",
       "category": "text",
@@ -244,7 +285,9 @@
     {
       "id": 21,
       "name": "Markdown编辑器",
+      "name_en": "Markdown Editor",
       "description": "支持实时预览的Markdown编辑器，可导出文档和复制HTML。",
+      "description_en": "A Markdown editor with real-time preview that allows you to export documents and copy HTML.",
       "icon": "📝",
       "iconColor": "#6366F1",
       "category": "text",
@@ -256,7 +299,9 @@
     {
       "id": 22,
       "name": "文字加密解密",
+      "name_en": "Text Encrypt/Decrypt",
       "description": "支持URL编码、Base64、MD5、SHA1、SHA256等多种加密解密方式。",
+      "description_en": "Supports various encryption and decryption methods like URL encoding, Base64, MD5, SHA1, and SHA256.",
       "icon": "🔐",
       "iconColor": "#8B5CF6",
       "category": "text",
@@ -268,7 +313,9 @@
     {
       "id": 23,
       "name": "Hex转字符串",
+      "name_en": "Hex to String",
       "description": "十六进制编码与文本字符串的相互转换，支持多种编码格式。",
+      "description_en": "Convert between hexadecimal encoding and text strings, with support for multiple encoding formats.",
       "icon": "🔄",
       "iconColor": "#F59E0B",
       "category": "text",
@@ -280,7 +327,9 @@
     {
       "id": 24,
       "name": "摩斯电码",
+      "name_en": "Morse Code",
       "description": "摩斯电码与文本的相互转换，支持音频播放和可视化显示。",
+      "description_en": "Convert between Morse code and text, with support for audio playback and visual display.",
       "icon": "📡",
       "iconColor": "#10B981",
       "category": "text",
@@ -292,7 +341,9 @@
     {
       "id": 25,
       "name": "中文简繁体转换",
+      "name_en": "Chinese Converter",
       "description": "中文简体字与繁体字的相互转换，支持批量处理。",
+      "description_en": "Convert between simplified and traditional Chinese characters, with support for batch processing.",
       "icon": "🈳",
       "iconColor": "#EF4444",
       "category": "text",
@@ -304,7 +355,9 @@
     {
       "id": 26,
       "name": "数字转大写",
+      "name_en": "Number to Chinese Capital",
       "description": "阿拉伯数字转换为中文大写数字，支持金额格式。",
+      "description_en": "Convert Arabic numerals to Chinese capital numbers, with support for currency format.",
       "icon": "🔢",
       "iconColor": "#3B82F6",
       "category": "text",
@@ -316,7 +369,9 @@
     {
       "id": 27,
       "name": "ASCII表格生成",
+      "name_en": "ASCII Table Generator",
       "description": "生成ASCII表格和Markdown表格，支持自定义格式。",
+      "description_en": "Generate ASCII and Markdown tables, with support for custom formats.",
       "icon": "📊",
       "iconColor": "#059669",
       "category": "text",
@@ -328,7 +383,9 @@
     {
       "id": 28,
       "name": "文本对比",
+      "name_en": "Text Diff",
       "description": "比较两个文本的差异，高亮显示不同之处。",
+      "description_en": "Compare the differences between two texts and highlight the differences.",
       "icon": "🔍",
       "iconColor": "#7C3AED",
       "category": "text",
@@ -340,7 +397,9 @@
     {
       "id": 29,
       "name": "压缩图像文件",
+      "name_en": "Compress Image",
       "description": "压缩JPG、PNG、SVG、以及GIF，同时节省空间，保持质量。",
+      "description_en": "Compress JPG, PNG, SVG, and GIF files while saving space and maintaining quality.",
       "icon": "🗜️",
       "iconColor": "#10B981",
       "category": "image",
@@ -352,7 +411,9 @@
     {
       "id": 30,
       "name": "调整图像的大小",
+      "name_en": "Resize Image",
       "description": "按照百分比或像素来定义尺寸，并调整JPG、PNG、SVG和GIF图片的尺寸。",
+      "description_en": "Define dimensions by percentage or pixels and resize JPG, PNG, SVG, and GIF images.",
       "icon": "📏",
       "iconColor": "#3B82F6",
       "category": "image",
@@ -364,7 +425,9 @@
     {
       "id": 31,
       "name": "裁剪图片",
+      "name_en": "Crop Image",
       "description": "通过设定像素来裁剪图像文件。裁剪JPG文件、PNG文件或GIF图像文件。",
+      "description_en": "Crop image files by setting pixels. Crop JPG, PNG, or GIF image files.",
       "icon": "✂️",
       "iconColor": "#06B6D4",
       "category": "image",
