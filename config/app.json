@@ -70,7 +70,7 @@
   "pages": {
     "about": {
       "name": "关于",
-      "path": "docs/about.md",
+      "path": "docs/about",
       "icon": "ℹ️"
     }
   }

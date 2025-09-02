@@ -364,8 +364,6 @@ class Utils {
 // 主题管理器
 class ThemeManager {
     constructor() {
-        // Fix: 主题初始化逻辑
-        // this.theme = Utils.getStorage('theme', 'light');
         // 如果 localStorage 中没有 'theme'，则根据系统偏好或默认值初始化
         this.theme = localStorage.getItem('theme') || this.detectSystemTheme() || 'light'; 
         this.init();
@@ -376,12 +374,18 @@ class ThemeManager {
         this.bindEvents();
     }
 
+    // 检测系统主题偏好
+    detectSystemTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
     applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         this.theme = theme;
-        // Fix: 存储主题逻辑
-        // Utils.setStorage('theme', theme);
-        // ⚠️ 直接将主题字符串保存到 localStorage，不通过 Utils.setStorage
+        // 直接将主题字符串保存到 localStorage
         localStorage.setItem('theme', theme); 
     }
 

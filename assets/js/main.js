@@ -7,15 +7,26 @@ class ToolsApp {
         this.currentCategory = 'all';
         this.searchQuery = '';
         this.aboutPage = null; // 用于存储关于页面配置
+        this.translations = {}; // 添加翻译属性
+        this.currentLang = localStorage.getItem('lang') || 'zh-CN'; // 当前语言，从localStorage获取或默认为中文
       
         this.init();
     }
 
-    // 初始化应用
+    /**
+     * @description 初始化应用程序，加载所有必要的数据和配置
+     */
     async init() {
         try {
             await this.loadConfig(); // 首先加载配置
+            // 在加载配置后，根据当前语言设置aboutPage的路径
+            if (this.config.pages && this.config.pages.about) {
+                this.aboutPage = { ...this.config.pages.about }; // 复制对象以避免直接修改config
+                this.aboutPage.path = `${this.aboutPage.path}.${this.currentLang}.md`;
+            }
             await this.loadToolsData();
+            await this.loadTranslations(); // 加载翻译数据
+            this.setInitialLanguage(); // 设置初始语言
             this.applySEO(); // 应用SEO配置
             this.initializeTheme();
             this.renderNavigation();
@@ -24,6 +35,7 @@ class ToolsApp {
             this.bindEventListeners();
             this.updateCounts();
             this.handleRouting(); // 处理路由
+            this.translatePage(); // 翻译页面内容
         } catch (error) {
             console.error('初始化应用失败:', error);
             this.showError('应用加载失败，请刷新页面重试');
@@ -64,6 +76,40 @@ class ToolsApp {
         }
     }
 
+    // 加载翻译数据
+    async loadTranslations() {
+        try {
+            const response = await fetch('./config/languages.json');
+            if (!response.ok) {
+                throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+            }
+            const data = await response.json();
+            this.translations = data;
+        } catch (error) {
+            console.error('加载翻译数据失败:', error);
+            this.showError('无法加载翻译数据，请检查网络连接或联系管理员');
+            throw error;
+        }
+    }
+
+    // 设置初始语言
+    setInitialLanguage() {
+        const savedLang = localStorage.getItem('lang');
+        if (savedLang && this.translations[savedLang]) {
+            this.currentLang = savedLang;
+        } else {
+            // 尝试从浏览器获取语言，默认为zh-CN
+            const browserLang = navigator.language.startsWith('zh') ? 'zh-CN' : 'en';
+            this.currentLang = this.translations[browserLang] ? browserLang : 'zh-CN';
+            localStorage.setItem('lang', this.currentLang);
+        }
+        // 更新语言选择器
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.value = this.currentLang;
+        }
+    }
+
     // 应用SEO配置
     applySEO() {
         const seoConfig = this.config.seo;
@@ -71,7 +117,7 @@ class ToolsApp {
 
         // 更新页面标题
         if (seoConfig.title) {
-            document.title = seoConfig.title;
+            document.title = this.getTranslation(seoConfig.title); // 使用翻译
         }
 
         // 辅助函数：更新或创建meta标签
@@ -99,10 +145,10 @@ class ToolsApp {
 
         // --- 标准 Meta 标签 ---
         if (seoConfig.description) {
-            updateMeta('description', seoConfig.description);
+            updateMeta('description', this.getTranslation(seoConfig.description)); // 使用翻译
         }
         if (seoConfig.keywords) {
-            updateMeta('keywords', seoConfig.keywords);
+            updateMeta('keywords', this.getTranslation(seoConfig.keywords)); // 使用翻译
         }
 
         // --- Canonical URL ---
@@ -114,16 +160,16 @@ class ToolsApp {
         // --- Open Graph Meta 标签 (社交媒体分享) ---
         // og:title: 优先使用独立的ogTitle，否则使用document.title
         if (seoConfig.ogTitle) {
-            updateMeta('og:title', seoConfig.ogTitle, true);
+            updateMeta('og:title', this.getTranslation(seoConfig.ogTitle), true); // 使用翻译
         } else if (seoConfig.title) { // Fallback to page title
-             updateMeta('og:title', seoConfig.title, true);
+             updateMeta('og:title', this.getTranslation(seoConfig.title), true); // 使用翻译
         }
         
         // og:description: 优先使用独立的ogDescription，否则使用meta description
         if (seoConfig.ogDescription) {
-            updateMeta('og:description', seoConfig.ogDescription, true);
+            updateMeta('og:description', this.getTranslation(seoConfig.ogDescription), true); // 使用翻译
         } else if (seoConfig.description) { // Fallback to meta description
-             updateMeta('og:description', seoConfig.description, true);
+             updateMeta('og:description', this.getTranslation(seoConfig.description), true); // 使用翻译
         }
 
         // og:url: 优先使用ogUrl，否则使用canonicalUrl，都不是则使用当前页面URL
@@ -170,6 +216,13 @@ class ToolsApp {
         this.updateThemeToggle(); 
     }
 
+    // 获取翻译文本
+    getTranslation(key) {
+        return this.translations[this.currentLang] && this.translations[this.currentLang][key]
+            ? this.translations[this.currentLang][key]
+            : key; // 如果没有找到翻译，则返回原始键
+    }
+
     // 更新主题切换按钮
     updateThemeToggle() {
         const themeToggle = document.getElementById('themeToggle');
@@ -178,24 +231,75 @@ class ToolsApp {
         }
     }
 
+    // 翻译单个元素
+    translateElement(element) {
+        const key = element.dataset.i18n;
+        if (key) {
+            element.textContent = this.getTranslation(key);
+        }
+        // 处理placeholder
+        const placeholderKey = element.dataset.i18nPlaceholder;
+        if (placeholderKey) {
+            element.placeholder = this.getTranslation(placeholderKey);
+        }
+    }
+
+    // 翻译整个页面
+    translatePage() {
+        document.querySelectorAll('[data-i18n]').forEach(element => this.translateElement(element));
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => this.translateElement(element));
+        // 更新动态生成的文本，例如搜索框的placeholder
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.placeholder = this.getTranslation('search_tools');
+        }
+        // 更新关于按钮的文本
+        this.renderAboutButton();
+        // 更新导航栏的“全部工具”文本
+        this.renderNavigation();
+        // 更新工具卡片中的“新功能！”和“官方”等徽章文本
+        if (document.getElementById('toolsGrid').style.display === 'grid') {
+            this.renderTools();
+        }
+    }
+
     // 渲染关于按钮
     renderAboutButton() {
         const headerActions = document.querySelector('.header-actions');
         if (!headerActions || !this.config.pages || !this.config.pages.about) return;
 
-        this.aboutPage = this.config.pages.about;
+        let aboutButton = document.getElementById('aboutButton'); // 尝试获取现有按钮
 
-        const aboutButton = document.createElement('button');
-        aboutButton.id = 'aboutButton';
-        aboutButton.className = 'theme-toggle'; // 复用 theme-toggle 的样式
-        aboutButton.innerHTML = `${this.aboutPage.icon} ${this.aboutPage.name}`;
+        if (!aboutButton) { // 如果按钮不存在，则创建
+            aboutButton = document.createElement('button');
+            aboutButton.id = 'aboutButton';
+            aboutButton.className = 'theme-toggle'; // 复用 theme-toggle 的样式
+            
+            // 将关于按钮插入到 theme-toggle 之前
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                headerActions.insertBefore(aboutButton, themeToggle);
+            } else {
+                headerActions.appendChild(aboutButton);
+            }
+            // 首次创建时绑定事件监听器
+            aboutButton.addEventListener('click', () => {
+                // 根据当前按钮的文本判断是显示关于页面还是返回主页
+                if (aboutButton.innerHTML.includes(this.getTranslation('about_us'))) {
+                    this.handleAboutClick();
+                } else {
+                    this.handleHomeClick();
+                }
+            });
+        }
         
-        // 将关于按钮插入到 theme-toggle 之前
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            headerActions.insertBefore(aboutButton, themeToggle);
+        // 更新按钮的innerHTML
+        // 确保在渲染时，按钮的文本始终是当前语言的“关于我们”或“主页”
+        // 这样在点击事件中，可以通过比较按钮文本是否包含“关于我们”的翻译来判断当前状态
+        if (document.getElementById('aboutPageContent').style.display === 'block') {
+            aboutButton.innerHTML = `🏠 ${this.getTranslation('home_page')}`;
         } else {
-            headerActions.appendChild(aboutButton);
+            aboutButton.innerHTML = `${this.aboutPage.icon} ${this.getTranslation('about_us')}`;
         }
     }
 
@@ -213,7 +317,7 @@ class ToolsApp {
 
         // 添加全部工具导航
         if (this.categories.all) {
-            const allItem = this.createNavItem('all', this.categories.all.name, this.categories.all.icon);
+            const allItem = this.createNavItem('all', this.getTranslation('all_tools'), this.categories.all.icon); // 使用翻译后的文本
             navList.appendChild(allItem);
         }
 
@@ -235,12 +339,13 @@ class ToolsApp {
         a.href = '#';
         a.className = `nav-link ${category === this.currentCategory ? 'active' : ''}`;
         a.dataset.category = category;
+        a.dataset.i18n = category === 'all' ? 'all_tools' : `category_${category}`; // 为分类导航添加i18n属性
 
         const count = this.getToolsCount(category);
         
         a.innerHTML = `
             <span class="nav-icon">${icon}</span>
-            <span>${name}</span>
+            <span>${this.getTranslation(a.dataset.i18n)}</span>
             <span class="nav-count">${count}</span>
         `;
 
@@ -318,8 +423,10 @@ class ToolsApp {
             <div class="tools-item-content">
                 <p>${tool.description}</p>
                 <div class="tools-item-badges">
-                    ${tool.isNew ? '<span class="tools-item-badge new">新功能！</span>' : ''}
-                    ${tool.author ? `<span class="tools-item-badge">${tool.author}</span>` : ''}
+                    ${tool.isNew ? `<span class="tools-item-badge new">${this.getTranslation('new_feature')}</span>` : ''}
+                    ${tool.author === '官方' ? `<span class="tools-item-badge">${this.getTranslation('official')}</span>` : ''}
+                    ${tool.author === '原创' ? `<span class="tools-item-badge">${this.getTranslation('original')}</span>` : ''}
+                    ${tool.author && tool.author !== '官方' && tool.author !== '原创' ? `<span class="tools-item-badge">${tool.author}</span>` : ''}
                 </div>
             </div>
         `;
@@ -351,17 +458,10 @@ class ToolsApp {
             themeToggle.addEventListener('click', () => this.toggleTheme());
         }
 
-        // 关于页面按钮 (只绑定一次事件监听)
-        const aboutButton = document.getElementById('aboutButton');
-        if (aboutButton) {
-            aboutButton.addEventListener('click', () => {
-                // 根据当前按钮的文本判断是显示关于页面还是返回主页
-                if (aboutButton.innerHTML.includes(this.aboutPage.name)) {
-                    this.handleAboutClick();
-                } else {
-                    this.handleHomeClick();
-                }
-            });
+        // 语言切换
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => this.setLanguage(e.target.value));
         }
 
         // 搜索功能
@@ -450,6 +550,27 @@ class ToolsApp {
         }
     }
 
+    /**
+     * @description 设置并切换应用程序的语言
+     * @param {string} langCode - 目标语言代码 (例如 'zh-CN', 'en')
+     */
+    setLanguage(langCode) {
+        if (this.currentLang === langCode) return; // 如果语言相同，则不进行操作
+
+        this.currentLang = langCode;
+        localStorage.setItem('lang', langCode);
+        this.translatePage(); // 重新翻译页面
+        // 更新关于页面路径，以便加载正确的Markdown文件
+        if (this.aboutPage) {
+            // 从 config 中获取基础路径，然后附加语言和扩展名
+            this.aboutPage.path = `${this.config.pages.about.path}.${langCode}.md`;
+        }
+        // 如果当前在关于页面，重新加载Markdown内容
+        if (document.getElementById('aboutPageContent').style.display === 'block') {
+            this.handleAboutClick();
+        }
+    }
+
     // 切换移动端菜单
     toggleMobileMenu() {
         const sidebar = document.getElementById('sidebar');
@@ -468,7 +589,9 @@ class ToolsApp {
         AppUtils.showError(message);
     }
 
-    // 处理关于页面点击
+    /**
+     * @description 处理“关于”按钮的点击事件，显示关于页面
+     */
     async handleAboutClick() {
         if (!this.aboutPage) return;
 
@@ -476,6 +599,12 @@ class ToolsApp {
         document.getElementById('toolsGrid').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
         
+        // 更新关于按钮为返回主页按钮
+        const aboutButton = document.getElementById('aboutButton');
+        if (aboutButton) {
+            aboutButton.innerHTML = `🏠 ${this.getTranslation('home_page')}`; // 使用翻译后的文本
+        }
+
         // 显示关于页面容器
         const aboutPageContent = document.getElementById('aboutPageContent');
         if (aboutPageContent) {
@@ -497,14 +626,8 @@ class ToolsApp {
                     twikoo.init({
                         envId: 'https://twikoo.ziyourufeng.eu.org/.netlify/functions/twikoo', // 腾讯云环境填 envId；Vercel 环境填地址（https://xxx.vercel.app）
                         el: '#tcomment', // 容器元素
-                        lang: 'zh-CN', // 用于手动设定评论区语言
+                        lang: this.currentLang, // 根据当前语言设定评论区语言
                     });
-                }
-
-                // 更新关于按钮为返回主页按钮
-                const aboutButton = document.getElementById('aboutButton');
-                if (aboutButton) {
-                    aboutButton.innerHTML = '🏠 主页'; // 或者其他表示返回主页的图标和文本
                 }
 
             } catch (error) {
@@ -515,7 +638,9 @@ class ToolsApp {
         }
     }
 
-    // 处理返回主页点击
+    /**
+     * @description 处理从“关于”页面返回主页的点击事件
+     */
     handleHomeClick() {
         this.renderToolsPage(); // 重新渲染工具页面
     }
@@ -526,7 +651,9 @@ class ToolsApp {
         this.renderToolsPage();
     }
 
-    // 渲染工具页面
+    /**
+     * @description 渲染主页的工具列表视图
+     */
     renderToolsPage() {
         document.getElementById('toolsGrid').style.display = 'grid';
         document.getElementById('emptyState').style.display = 'none';
@@ -538,7 +665,7 @@ class ToolsApp {
         // 恢复关于按钮为原始状态
         const aboutButton = document.getElementById('aboutButton');
         if (aboutButton && this.aboutPage) {
-            aboutButton.innerHTML = `${this.aboutPage.icon} ${this.aboutPage.name}`;
+            aboutButton.innerHTML = `${this.aboutPage.icon} ${this.getTranslation('about_us')}`; // 使用翻译后的文本
         }
     }
 }
@@ -547,26 +674,13 @@ class ToolsApp {
 const AppUtils = {
     // 显示消息提示
     showMessage(message, type = 'info') {
-        // 创建消息提示元素
-        const messageElement = document.createElement('div');
-        messageElement.className = `alert alert-${type}`;
-        messageElement.textContent = message;
-        messageElement.style.position = 'fixed';
-        messageElement.style.top = '20px';
-        messageElement.style.right = '20px';
-        messageElement.style.zIndex = '9999';
-        messageElement.style.minWidth = '300px';
-        messageElement.style.boxShadow = 'var(--shadow-hover)';
-        
-        // 添加到页面
-        document.body.appendChild(messageElement);
-        
-        // 自动移除
-        setTimeout(() => {
-            if (messageElement.parentNode) {
-                messageElement.parentNode.removeChild(messageElement);
-            }
-        }, 3000);
+        // 调用 utils.js 中的通用函数
+        if (window.Utils && window.Utils.showMessage) {
+            window.Utils.showMessage(message, type);
+        } else {
+            // 降级方案，以防 utils.js 未加载
+            alert(message);
+        }
     },
 
     // 显示错误
