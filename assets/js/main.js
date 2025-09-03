@@ -480,6 +480,11 @@ class ToolsApp {
 
         this.currentLang = langCode;
         localStorage.setItem('lang', langCode);
+
+        // 更新SEO信息
+        document.documentElement.lang = langCode;
+        this.applySEO();
+
         this.translatePage();
         
         // If on a page that depends on language, refresh its content
