@@ -515,7 +515,11 @@ class ToolsApp {
             const toolId = hash.substring('#/tool/'.length);
             this.showToolTutorialPage(toolId);
         } else if (hash === '#/about') {
-            this.showAboutPage();
+            this.showMarkdownPage('about');
+        } else if (hash === '#/privacy-policy') {
+            this.showMarkdownPage('privacy-policy');
+        } else if (hash === '#/terms-of-service') {
+            this.showMarkdownPage('terms-of-service');
         } else {
             this.showMainPage();
         }
@@ -528,37 +532,44 @@ class ToolsApp {
         this.renderTools();
     }
 
-    async showAboutPage() {
-        if (!this.aboutPage) return;
-
+    async showMarkdownPage(pageId) {
         document.getElementById('toolsGrid').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('toolTutorialPageContent').style.display = 'none';
         
-        const aboutPageContent = document.getElementById('aboutPageContent');
-        aboutPageContent.style.display = 'block';
+        const pageContent = document.getElementById('aboutPageContent');
+        pageContent.style.display = 'block';
         
+        const twikooContainer = document.getElementById('twikooContainer');
+        const markdownContainer = document.getElementById('markdownRenderedContent');
+
         try {
-            const path = `${this.aboutPage.path}.${this.currentLang}.md`;
-            const response = await fetch(path);
+            const path = `./docs/${pageId}.${this.currentLang}.md`;
+            let response = await fetch(path);
             if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
+                const fallbackLang = 'zh-CN';
+                const fallbackPath = `./docs/${pageId}.${fallbackLang}.md`;
+                response = await fetch(fallbackPath);
+                if (!response.ok) throw new Error(`Could not load content file: ${fallbackPath}`);
             }
             const markdown = await response.text();
-            
-            document.getElementById('markdownRenderedContent').innerHTML = marked.parse(markdown);
+            markdownContainer.innerHTML = marked.parse(markdown);
 
-            if (window.twikoo) {
+            // Only show comments on the 'about' page
+            if (pageId === 'about' && window.twikoo) {
+                twikooContainer.style.display = 'block';
                 twikoo.init({
                     envId: 'https://twikoo.ziyourufeng.eu.org/.netlify/functions/twikoo',
                     el: '#tcomment',
                     lang: this.currentLang,
                 });
+            } else {
+                twikooContainer.style.display = 'none';
             }
         } catch (error) {
-            console.error('Failed to load or render about page:', error);
-            this.showError('Could not load about page content');
-            aboutPageContent.innerHTML = `<p class="text-danger">Failed to load content: ${error.message}</p>`;
+            console.error(`Failed to load or render ${pageId} page:`, error);
+            this.showError(`Could not load ${pageId} content`);
+            markdownContainer.innerHTML = `<p class="text-danger">Failed to load content: ${error.message}</p>`;
         }
     }
 

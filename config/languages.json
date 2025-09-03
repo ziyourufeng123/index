@@ -25,7 +25,9 @@
     "category_converter": "Format Conversion",
     "category_interesting": "Creative Experience",
     "category_utility": "Utility Tools",
-    "category_custom": "Original Tools"
+    "category_custom": "Original Tools",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service"
   },
   "zh-CN": {
     "web_tools_title": "Web工具集",
@@ -53,6 +55,8 @@
     "category_converter": "格式转换",
     "category_interesting": "创意体验",
     "category_utility": "实用工具",
-    "category_custom": "原创工具"
+    "category_custom": "原创工具",
+    "privacy_policy": "隐私政策",
+    "terms_of_service": "服务条款"
   }
 }
