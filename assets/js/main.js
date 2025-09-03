@@ -235,7 +235,7 @@ class ToolsApp {
         if (searchInput) {
             searchInput.placeholder = this.getTranslation('search_tools');
         }
-        this.renderAboutButton();
+        this.updateHeaderButtons(); // 更新按钮状态和文本
         this.renderNavigation();
         this.renderTools();
     }
@@ -251,7 +251,6 @@ class ToolsApp {
             aboutButton = document.createElement('a'); // Change to an anchor tag for routing
             aboutButton.id = 'aboutButton';
             aboutButton.className = 'theme-toggle'; // 复用 theme-toggle 的样式
-            aboutButton.href = '#/about'; // Set href for routing
             
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
@@ -260,8 +259,27 @@ class ToolsApp {
                 headerActions.appendChild(aboutButton);
             }
         }
-        
-        aboutButton.innerHTML = `${this.aboutPage.icon} ${this.getTranslation('about_us')}`;
+        this.updateHeaderButtons(); // 初始化按钮状态
+    }
+
+    // 更新头部按钮状态（关于/返回）
+    updateHeaderButtons() {
+        const aboutButton = document.getElementById('aboutButton');
+        if (!aboutButton) return;
+
+        const isSubPage = window.location.hash.startsWith('#/about') || 
+                          window.location.hash.startsWith('#/privacy-policy') || 
+                          window.location.hash.startsWith('#/terms-of-service');
+
+        if (isSubPage) {
+            // 在子页面，显示“返回主页”
+            aboutButton.href = '#/';
+            aboutButton.innerHTML = `↩️ ${this.getTranslation('back_to_home')}`;
+        } else {
+            // 在主页，显示“关于我们”
+            aboutButton.href = '#/about';
+            aboutButton.innerHTML = `${this.config.pages.about.icon} ${this.getTranslation('about_us')}`;
+        }
     }
 
     // 渲染导航
@@ -530,9 +548,11 @@ class ToolsApp {
         document.getElementById('aboutPageContent').style.display = 'none';
         document.getElementById('toolTutorialPageContent').style.display = 'none';
         this.renderTools();
+        this.updateHeaderButtons(); // Update button state
     }
 
     async showMarkdownPage(pageId) {
+        this.updateHeaderButtons(); // Update button state
         document.getElementById('toolsGrid').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('toolTutorialPageContent').style.display = 'none';
