@@ -478,6 +478,21 @@
       "tool_url": "./tools/utility/scientific-calculator/index.html",
       "author": "官方",
       "version": "1.0.0"
+    },
+    {
+      "id": "password-generator",
+      "name": "随机密码生成器",
+      "name_en": "Random Password Generator",
+      "description": "生成包含大小写字母、数字和符号的强密码，支持自定义长度和字符集。",
+      "description_en": "Generate strong passwords with uppercase, lowercase, numbers, and symbols. Customizable length and charset.",
+      "icon": "🔑",
+      "iconColor": "#10B981",
+      "category": "utility",
+      "isNew": true,
+      "url": "#/tool/password-generator",
+      "tool_url": "./tools/utility/password-generator/index.html",
+      "author": "官方",
+      "version": "1.0.0"
     }
   ]
 }
