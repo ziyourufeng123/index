@@ -463,6 +463,21 @@
       "tool_url": "./tools/image/cropper/index.html",
       "author": "官方",
       "version": "1.0.0"
+    },
+    {
+      "id": "scientific-calculator",
+      "name": "科学计算器",
+      "name_en": "Scientific Calculator",
+      "description": "功能强大的在线科学计算器，支持三角函数、对数、指数等高级运算。",
+      "description_en": "A powerful online scientific calculator supporting trigonometric functions, logarithms, exponents, and more.",
+      "icon": "🧮",
+      "iconColor": "#4d90fe",
+      "category": "utility",
+      "isNew": true,
+      "url": "#/tool/scientific-calculator",
+      "tool_url": "./tools/utility/scientific-calculator/index.html",
+      "author": "官方",
+      "version": "1.0.0"
     }
   ]
 }

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器 - Web工具集</title>
+    <link rel="stylesheet" href="../../../assets/css/common.css">
+    <style>
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .display-screen {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            text-align: right;
+            border: 1px solid var(--border-color);
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .expression-display {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+            min-height: 24px;
+            margin-bottom: var(--spacing-xs);
+            font-family: var(--font-family-mono);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .result-display {
+            color: var(--text-primary);
+            font-size: 3rem;
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-family-mono);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-sm);
+        }
+
+        .key {
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .key:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .key:active {
+            transform: translateY(0);
+        }
+
+        .key.operator {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            border-color: transparent;
+        }
+
+        .key.operator:hover {
+            background: var(--primary-color);
+            color: var(--text-inverse);
+        }
+
+        .key.function {
+            color: var(--secondary-color);
+            font-size: var(--font-size-base);
+        }
+
+        .key.equals {
+            background: var(--primary-color);
+            color: var(--text-inverse);
+            grid-column: span 1;
+            border-color: var(--primary-color);
+        }
+
+        .key.equals:hover {
+            background: var(--primary-hover);
+        }
+
+        .key.clear {
+            color: var(--danger-color);
+            background: var(--danger-light);
+            border-color: transparent;
+        }
+
+        .key.clear:hover {
+            background: var(--danger-color);
+            color: var(--text-inverse);
+        }
+
+        .history-panel {
+            margin-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            padding-top: var(--spacing-md);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .history-item {
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .history-expression {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .history-result {
+            color: var(--text-primary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        @media (max-width: 768px) {
+            .keypad {
+                gap: var(--spacing-xs);
+            }
+            
+            .key {
+                padding: var(--spacing-sm);
+                font-size: var(--font-size-base);
+            }
+
+            .result-display {
+                font-size: 2rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="tool-container">
+        <header class="header">
+            <div class="logo">
+                <a href="../../../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                    <div class="logo-icon">Tool</div>
+                    <span>Web工具集</span>
+                </a>
+            </div>
+            
+            <div class="tool-title" style="flex: 1; text-align: center; font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">
+                科学计算器
+            </div>
+            
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" title="切换主题">
+                    <span class="theme-icon-light">🌞</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="main" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <div class="calculator-container">
+                <div class="display-screen">
+                    <div class="expression-display" id="expressionDisplay"></div>
+                    <div class="result-display" id="resultDisplay">0</div>
+                </div>
+
+                <div class="keypad">
+                    <!-- Row 1 -->
+                    <button class="key function" data-val="deg">deg</button>
+                    <button class="key function" data-val="rad">rad</button>
+                    <button class="key function" data-val="(">(</button>
+                    <button class="key function" data-val=")">)</button>
+                    <button class="key clear" data-action="clear">AC</button>
+
+                    <!-- Row 2 -->
+                    <button class="key function" data-val="sin">sin</button>
+                    <button class="key function" data-val="cos">cos</button>
+                    <button class="key function" data-val="tan">tan</button>
+                    <button class="key function" data-val="log">log</button>
+                    <button class="key function" data-val="ln">ln</button>
+
+                    <!-- Row 3 -->
+                    <button class="key function" data-val="sqrt">√</button>
+                    <button class="key function" data-val="^">x^y</button>
+                    <button class="key function" data-val="pi">π</button>
+                    <button class="key function" data-val="e">e</button>
+                    <button class="key operator" data-val="/">÷</button>
+
+                    <!-- Row 4 -->
+                    <button class="key" data-val="7">7</button>
+                    <button class="key" data-val="8">8</button>
+                    <button class="key" data-val="9">9</button>
+                    <button class="key clear" data-action="backspace">⌫</button>
+                    <button class="key operator" data-val="*">×</button>
+
+                    <!-- Row 5 -->
+                    <button class="key" data-val="4">4</button>
+                    <button class="key" data-val="5">5</button>
+                    <button class="key" data-val="6">6</button>
+                    <button class="key operator" data-val="-">-</button>
+                    <button class="key operator" data-val="+">+</button>
+
+                    <!-- Row 6 -->
+                    <button class="key" data-val="1">1</button>
+                    <button class="key" data-val="2">2</button>
+                    <button class="key" data-val="3">3</button>
+                    <button class="key" data-val=".">.</button>
+                    <button class="key equals" data-action="calculate">=</button>
+                    
+                    <!-- Row 7 (Zero spans two columns visually if needed, but grid is 5 cols) -->
+                    <button class="key" data-val="0" style="grid-column: span 2;">0</button>
+                    <button class="key function" data-val="abs">abs</button>
+                    <button class="key function" data-val="%">%</button>
+                </div>
+
+                <div class="history-panel">
+                    <div class="history-header">
+                        <h3>计算历史</h3>
+                        <button class="btn btn-sm btn-ghost" id="clearHistory">清除历史</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <!-- History items will be added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Web工具集 - 科学计算器</p>
+        </footer>
+    </div>
+
+    <script src="../../../assets/js/utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.0.1/math.min.js"></script>
+    <script>
+        class ScientificCalculator {
+            constructor() {
+                this.expression = '';
+                this.result = '0';
+                this.history = [];
+                this.isRadians = false; // Default to degrees if needed, but mathjs uses radians by default for trig functions. We need to handle this.
+                
+                this.initElements();
+                this.bindEvents();
+                this.loadHistory();
+            }
+
+            initElements() {
+                this.expressionDisplay = document.getElementById('expressionDisplay');
+                this.resultDisplay = document.getElementById('resultDisplay');
+                this.historyList = document.getElementById('historyList');
+                this.clearHistoryBtn = document.getElementById('clearHistory');
+                this.keys = document.querySelectorAll('.key');
+                this.themeToggle = document.getElementById('themeToggle');
+            }
+
+            bindEvents() {
+                this.keys.forEach(key => {
+                    key.addEventListener('click', () => {
+                        const val = key.dataset.val;
+                        const action = key.dataset.action;
+
+                        if (val) {
+                            this.handleInput(val);
+                        } else if (action) {
+                            this.handleAction(action);
+                        }
+                    });
+                });
+
+                this.clearHistoryBtn.addEventListener('click', () => {
+                    this.clearHistory();
+                });
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => {
+                    const key = e.key;
+                    if (/[0-9\.\+\-\*\/\(\)\^%]/.test(key)) {
+                        this.handleInput(key);
+                    } else if (key === 'Enter') {
+                        this.handleAction('calculate');
+                    } else if (key === 'Backspace') {
+                        this.handleAction('backspace');
+                    } else if (key === 'Escape') {
+                        this.handleAction('clear');
+                    }
+                });
+
+                // Theme toggle
+                this.themeToggle.addEventListener('click', () => {
+                    window.themeManager.toggle();
+                });
+            }
+
+            handleInput(val) {
+                // Handle special replacements for display or logic
+                if (val === 'pi') val = 'pi';
+                if (val === 'e') val = 'e';
+                
+                // If we just calculated a result and type a number, start fresh
+                if (this.justCalculated && /[0-9\.]/.test(val)) {
+                    this.expression = '';
+                    this.justCalculated = false;
+                } else if (this.justCalculated && /[\+\-\*\/]/.test(val)) {
+                    // If we type an operator, continue with the result
+                    this.expression = this.result;
+                    this.justCalculated = false;
+                }
+
+                this.expression += val;
+                this.updateDisplay();
+            }
+
+            handleAction(action) {
+                switch (action) {
+                    case 'clear':
+                        this.expression = '';
+                        this.result = '0';
+                        this.justCalculated = false;
+                        this.updateDisplay();
+                        break;
+                    case 'backspace':
+                        this.expression = this.expression.slice(0, -1);
+                        this.updateDisplay();
+                        break;
+                    case 'calculate':
+                        this.calculate();
+                        break;
+                }
+            }
+
+            calculate() {
+                try {
+                    if (!this.expression) return;
+
+                    // Pre-process expression for mathjs
+                    let evalExpr = this.expression
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/ln/g, 'log') // mathjs log is natural log by default? No, log(x) is ln(x) in mathjs usually, log10 is base 10.
+                                               // Actually math.log(x) is natural logarithm. math.log10(x) is base 10.
+                                               // Let's check user intent. Usually 'log' on calc is base 10, 'ln' is base e.
+                                               // So if user typed 'log', we might want log10. If 'ln', we want log.
+                        
+                    // Let's refine the buttons:
+                    // Button 'log' -> data-val='log10('
+                    // Button 'ln' -> data-val='log('
+                    // But I used simple strings. Let's do replacement.
+                    
+                    // Replace 'log' with 'log10' ONLY if it's not already part of a word (simple check)
+                    // Actually, let's just handle the specific function names from buttons
+                    
+                    // Better approach: The buttons add text. 
+                    // If I click 'log', it adds 'log'. 
+                    // In mathjs, log(x) is natural. log(x, base) is custom base. log10(x) is base 10.
+                    // Standard calculators: log = base 10, ln = base e.
+                    
+                    evalExpr = evalExpr.replace(/\bdeg\b/g, ''); // Remove deg/rad markers if we added them, or handle mode
+                    evalExpr = evalExpr.replace(/\brad\b/g, '');
+
+                    // Handle log vs ln
+                    // We need to be careful not to replace 'log' inside 'log10' if we had it.
+                    // But our buttons send 'log' and 'ln'.
+                    // So 'ln' -> 'log' (natural)
+                    // 'log' -> 'log10' (base 10)
+                    
+                    // We need to do this carefully.
+                    // Let's assume the user sees 'log' and 'ln' on screen.
+                    // We replace 'ln' with 'log' first (to mathjs natural log)
+                    // Then 'log' (which was original log button) to 'log10'.
+                    // Wait, if I replace ln -> log, then I have two 'log's.
+                    // Strategy: Replace 'log' -> 'log10' first. Then 'ln' -> 'log'.
+                    
+                    evalExpr = evalExpr.replace(/log/g, 'log10');
+                    evalExpr = evalExpr.replace(/ln/g, 'log');
+
+                    const res = math.evaluate(evalExpr);
+                    
+                    // Format result
+                    this.result = math.format(res, { precision: 14 });
+                    this.addToHistory(this.expression, this.result);
+                    this.expression = ''; // Clear expression or keep it? Usually clear or move result to it.
+                    // Let's keep result in result display, and expression empty for next input, 
+                    // but if they type operator, we use result.
+                    
+                    this.justCalculated = true;
+                    this.updateDisplay();
+                } catch (err) {
+                    this.result = 'Error';
+                    this.updateDisplay();
+                    console.error(err);
+                }
+            }
+
+            updateDisplay() {
+                this.expressionDisplay.textContent = this.expression;
+                this.resultDisplay.textContent = this.result;
+            }
+
+            addToHistory(expr, res) {
+                this.history.unshift({ expr, res });
+                if (this.history.length > 10) this.history.pop();
+                this.saveHistory();
+                this.renderHistory();
+            }
+
+            renderHistory() {
+                this.historyList.innerHTML = this.history.map(item => `
+                    <div class="history-item" onclick="app.loadFromHistory('${item.res}')">
+                        <span class="history-expression">${item.expr} =</span>
+                        <span class="history-result">${item.res}</span>
+                    </div>
+                `).join('');
+            }
+
+            loadFromHistory(val) {
+                this.expression += val;
+                this.updateDisplay();
+            }
+
+            saveHistory() {
+                Utils.setStorage('calc_history', this.history);
+            }
+
+            loadHistory() {
+                this.history = Utils.getStorage('calc_history', []);
+                this.renderHistory();
+            }
+
+            clearHistory() {
+                this.history = [];
+                this.saveHistory();
+                this.renderHistory();
+            }
+        }
+
+        const app = new ScientificCalculator();
+    </script>
+</body>
+</html>
