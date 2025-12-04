@@ -4508,7 +4508,7 @@ body {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
 
         <script>
@@ -5045,7 +5045,7 @@ class QRGenerator {
                 const url = this.urlInput.value.trim();
                 if (!url) return '';
                 
-                return url.startsWith('http') ? url : `https:
+                return url.startsWith('http') ? url : `https://${url}`;
             
             case 'wifi':
                 const ssid = this.wifiSSID.value.trim();
@@ -5080,7 +5080,7 @@ class QRGenerator {
         }
     }
 
-    async generateQR() {
+    generateQR() {
         const content = this.getQRContent();
         
         if (!content) {
@@ -5091,40 +5091,37 @@ class QRGenerator {
         this.showLoading();
         
         try {
-            const options = {
-                width: parseInt(this.qrSize.value),
-                margin: 2,
-                color: {
-                    dark: this.foregroundColor.value,
-                    light: this.backgroundColor.value
-                },
-                errorCorrectionLevel: this.errorLevel.value
-            };
-
-            
             this.qrDisplay.innerHTML = '';
             
+            const correctLevelMap = {
+                'L': QRCode.CorrectLevel.L,
+                'M': QRCode.CorrectLevel.M,
+                'Q': QRCode.CorrectLevel.Q,
+                'H': QRCode.CorrectLevel.H
+            };
+
+            new QRCode(this.qrDisplay, {
+                text: content,
+                width: parseInt(this.qrSize.value),
+                height: parseInt(this.qrSize.value),
+                colorDark : this.foregroundColor.value,
+                colorLight : this.backgroundColor.value,
+                correctLevel : correctLevelMap[this.errorLevel.value]
+            });
             
-            const canvas = document.createElement('canvas');
-            await QRCode.toCanvas(canvas, content, options);
-            
-            
-            this.qrDisplay.appendChild(canvas);
             this.qrDisplay.classList.add('has-qr');
             
-            
             this.generatedQR = {
-                canvas: canvas,
-                content: content,
-                options: options
+                content: content
             };
-            
             
             this.qrActions.style.display = 'flex';
             this.qrInfo.style.display = 'block';
             
-            
-            this.updateQRInfo(content, options);
+            this.updateQRInfo(content, {
+                width: parseInt(this.qrSize.value),
+                errorCorrectionLevel: this.errorLevel.value
+            });
             
             this.hideLoading();
             this.showSuccess('二维码生成成功！');
@@ -5164,33 +5161,28 @@ class QRGenerator {
     }
 
     downloadQR() {
-        if (!this.generatedQR) return;
+        const img = this.qrDisplay.querySelector('img');
+        if (!img) return;
         
-        const canvas = this.generatedQR.canvas;
         const link = document.createElement('a');
         link.download = `qrcode_${Date.now()}.png`;
-        link.href = canvas.toDataURL();
+        link.href = img.src;
         link.click();
     }
 
     async copyQR() {
-        if (!this.generatedQR) return;
+        const img = this.qrDisplay.querySelector('img');
+        if (!img) return;
         
         try {
-            const canvas = this.generatedQR.canvas;
-            canvas.toBlob(async (blob) => {
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            'image/png': blob
-                        })
-                    ]);
-                    this.showSuccess('二维码已复制到剪贴板');
-                } catch (err) {
-                    console.error('复制失败:', err);
-                    this.showError('复制失败，请尝试下载');
-                }
-            });
+            const response = await fetch(img.src);
+            const blob = await response.blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': blob
+                })
+            ]);
+            this.showSuccess('二维码已复制到剪贴板');
         } catch (error) {
             console.error('复制失败:', error);
             this.showError('复制失败，请尝试下载');

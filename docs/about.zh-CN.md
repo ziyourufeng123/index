@@ -10,11 +10,12 @@
 
 如果您有任何问题或建议，请通过以下方式联系我们：
 
-*   **邮箱**：example@example.com
+*   **邮箱**：zwx19990307@gmail.com
 *   **GitHub**：[ziyourufeng123/index](https://github.com/ziyourufeng123/index)
 
 感谢您的支持！
 
 ## 评论
+你可以添加您的邮箱以便评论有回复时候自动发送邮件提醒你，或者添加网址使得评论者可以访问您的个人网站。
 
 <div id="tcomment"></div>
