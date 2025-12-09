@@ -45,6 +45,51 @@
   },
   "tools": [
     {
+      "id": "scientific-calculator",
+      "name": "科学计算器",
+      "name_en": "Scientific Calculator",
+      "description": "功能强大的在线科学计算器，支持三角函数、对数、指数等高级运算。",
+      "description_en": "A powerful online scientific calculator supporting trigonometric functions, logarithms, exponents, and more.",
+      "icon": "🧮",
+      "iconColor": "#4d90fe",
+      "category": "utility",
+      "isNew": true,
+      "url": "#/tool/scientific-calculator",
+      "tool_url": "./tools/utility/scientific-calculator/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": "password-generator",
+      "name": "随机密码生成器",
+      "name_en": "Random Password Generator",
+      "description": "生成包含大小写字母、数字和符号的强密码，支持自定义长度和字符集。",
+      "description_en": "Generate strong passwords with uppercase, lowercase, numbers, and symbols. Customizable length and charset.",
+      "icon": "🔑",
+      "iconColor": "#10B981",
+      "category": "utility",
+      "isNew": true,
+      "url": "#/tool/password-generator",
+      "tool_url": "./tools/utility/password-generator/index.html",
+      "author": "官方",
+      "version": "1.0.0"
+    },
+    {
+      "id": "web-ffmpeg",
+      "name": "web-ffmpeg OmniConvert AI",
+      "name_en": "web-ffmpeg OmniConvert AI",
+      "description": "基于 WebAssembly 和 Gemini AI 的web-ffmpeg全能媒体转换工具，支持自然语言指令。",
+      "description_en": "All-in-one media web-ffmpeg converter based on WebAssembly and Gemini AI, supporting natural language commands.",
+      "icon": "🎬",
+      "iconColor": "#3b82f6",
+      "category": "utility",
+      "isNew": true,
+      "url": "#/tool/web-ffmpeg",
+      "tool_url": "./tools/utility/web_ffmpeg/index.html",
+      "author": "Web工具集团队",
+      "version": "1.0.0"
+    },
+    {
       "id": "online-ps",
       "name": "在线PS",
       "name_en": "Online PS",
@@ -464,50 +509,6 @@
       "author": "官方",
       "version": "1.0.0"
     },
-    {
-      "id": "scientific-calculator",
-      "name": "科学计算器",
-      "name_en": "Scientific Calculator",
-      "description": "功能强大的在线科学计算器，支持三角函数、对数、指数等高级运算。",
-      "description_en": "A powerful online scientific calculator supporting trigonometric functions, logarithms, exponents, and more.",
-      "icon": "🧮",
-      "iconColor": "#4d90fe",
-      "category": "utility",
-      "isNew": true,
-      "url": "#/tool/scientific-calculator",
-      "tool_url": "./tools/utility/scientific-calculator/index.html",
-      "author": "官方",
-      "version": "1.0.0"
-    },
-    {
-      "id": "password-generator",
-      "name": "随机密码生成器",
-      "name_en": "Random Password Generator",
-      "description": "生成包含大小写字母、数字和符号的强密码，支持自定义长度和字符集。",
-      "description_en": "Generate strong passwords with uppercase, lowercase, numbers, and symbols. Customizable length and charset.",
-      "icon": "🔑",
-      "iconColor": "#10B981",
-      "category": "utility",
-      "isNew": true,
-      "url": "#/tool/password-generator",
-      "tool_url": "./tools/utility/password-generator/index.html",
-      "author": "官方",
-      "version": "1.0.0"
-    },
-    {
-      "id": "web-ffmpeg",
-      "name": "web-ffmpeg OmniConvert AI",
-      "name_en": "web-ffmpeg OmniConvert AI",
-      "description": "基于 WebAssembly 和 Gemini AI 的web-ffmpeg全能媒体转换工具，支持自然语言指令。",
-      "description_en": "All-in-one media web-ffmpeg converter based on WebAssembly and Gemini AI, supporting natural language commands.",
-      "icon": "🎬",
-      "iconColor": "#3b82f6",
-      "category": "utility",
-      "isNew": true,
-      "url": "#/tool/web-ffmpeg",
-      "tool_url": "./tools/utility/web_ffmpeg/index.html",
-      "author": "Web工具集团队",
-      "version": "1.0.0"
-    }
+
   ]
 }
