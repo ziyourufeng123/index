@@ -493,6 +493,20 @@
       "tool_url": "./tools/utility/password-generator/index.html",
       "author": "官方",
       "version": "1.0.0"
+    },
+    {
+      "id": "web-ffmpeg",
+      "name": "OmniConvert AI",
+      "name_en": "OmniConvert AI",
+      "description": "基于 WebAssembly 和 Gemini AI 的全能媒体转换工具，支持自然语言指令。",
+      "description_en": "All-in-one media converter based on WebAssembly and Gemini AI, supporting natural language commands.",
+      "icon": "🎬",
+      "iconColor": "#3b82f6",
+      "category": "utility",
+      "isNew": true,
+      "url": "tools/utility/web_ffmpeg/index.html",
+      "author": "Web工具集团队",
+      "version": "1.0.0"
     }
   ]
 }
