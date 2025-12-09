@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniConvert AI - 全能媒体转换器</title>
+    <!-- Note: cdn.tailwindcss.com is used for development/demo purposes. For production, use a build step. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        surface: '#1e293b',
+                    },
+                    fontFamily: {
+                        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@ffmpeg/ffmpeg": "https://esm.sh/@ffmpeg/ffmpeg@0.12.10",
+            "@ffmpeg/util": "https://esm.sh/@ffmpeg/util@0.12.1",
+            "@google/genai": "https://esm.run/@google/genai"
+        }
+    }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tab-btn.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .tool-card {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .tool-card:hover {
+            transform: translateY(-2px);
+            background-color: rgba(51, 65, 85, 0.5);
+        }
+        .tool-card.selected {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+        .tool-card.selected::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 24px 24px 0;
+            border-color: transparent #3b82f6 transparent transparent;
+        }
+        /* Checkmark in corner */
+        .tool-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 0; right: 2px;
+            color: white;
+            font-size: 10px;
+            z-index: 10;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-darker text-slate-200 min-h-screen font-sans selection:bg-primary selection:text-white">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/20">OC</div>
+                <h1 class="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">OmniConvert AI</h1>
+            </div>
+            <div class="text-xs font-mono text-slate-500 hidden sm:block bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800">
+                Gemini 2.5 & FFmpeg WASM 驱动
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-12 px-4 max-w-6xl mx-auto space-y-6">
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="relative group transition-all duration-300">
+            <div id="drop-zone" class="relative z-10 glass rounded-2xl p-12 border-2 border-dashed border-slate-700 group-hover:border-primary group-hover:bg-slate-800/30 transition-all flex flex-col items-center justify-center text-center gap-4 cursor-pointer select-none">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
+                    <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                </div>
+                <div class="pointer-events-none space-y-2">
+                    <h3 class="text-xl font-medium text-white">拖放文件至此</h3>
+                    <p class="text-slate-400 text-sm">或点击上传 (支持视频、音频)</p>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept="video/*,audio/*" />
+            </div>
+        </section>
+
+        <!-- Main Interface -->
+        <div id="main-interface" class="hidden space-y-6">
+            
+            <!-- File Info Bar -->
+            <div class="flex items-center justify-between glass p-4 rounded-xl border-l-4 border-primary">
+                <div class="flex items-center gap-4 overflow-hidden">
+                    <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p id="file-name" class="font-medium text-white text-sm sm:text-base truncate"></p>
+                        <div class="flex items-center gap-3 text-xs text-slate-500 font-mono mt-0.5">
+                            <span id="file-size"></span>
+                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            <span id="file-type">Unknown</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="remove-file-btn" class="text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors p-2" title="移除文件">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Control Dashboard (Fill empty space) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <!-- Step 1 Info -->
+                 <div class="glass p-4 rounded-xl flex items-center gap-3 border border-slate-700/30">
+                     <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">1</div>
+                     <div>
+                         <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">当前步骤</div>
+                         <div class="text-sm text-slate-200">选择转换模式</div>
+                     </div>
+                 </div>
+                 <!-- Engine Status -->
+                 <div class="glass p-4 rounded-xl flex items-center gap-3 border border-slate-700/30">
+                     <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-700">
+                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                     </div>
+                     <div>
+                         <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">转换核心</div>
+                         <div class="text-sm text-slate-200 flex items-center gap-2">
+                             FFmpeg WASM
+                             <span id="engine-status-dot" class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                         </div>
+                     </div>
+                 </div>
+                 <!-- Memory Status (Mock) -->
+                 <div class="glass p-4 rounded-xl flex items-center gap-3 border border-slate-700/30">
+                     <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-700">
+                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                     </div>
+                     <div>
+                         <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">系统资源</div>
+                         <div class="text-sm text-slate-200">准备就绪</div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Workspace Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Tools Panel (Left - 8 cols) -->
+                <div class="lg:col-span-8 glass rounded-2xl flex flex-col overflow-hidden min-h-[500px]">
+                    <!-- Tabs -->
+                    <div class="flex items-center gap-1 p-2 border-b border-white/5 bg-slate-900/20 overflow-x-auto">
+                        <button class="tab-btn active px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 rounded-lg transition-colors whitespace-nowrap" data-tab="video">🎬 视频转换</button>
+                        <button class="tab-btn px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 rounded-lg transition-colors whitespace-nowrap" data-tab="audio">🎵 音频提取</button>
+                        <button class="tab-btn px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 rounded-lg transition-colors whitespace-nowrap" data-tab="image">🖼️ 图片/截图</button>
+                        <button class="tab-btn px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 rounded-lg transition-colors whitespace-nowrap" data-tab="tools">🛠️ 工具与特效</button>
+                        <button class="tab-btn px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 rounded-lg transition-colors whitespace-nowrap" data-tab="ai">🤖 AI 实验室</button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6 flex-1 bg-gradient-to-b from-transparent to-slate-900/30">
+                        
+                        <!-- Video Tab -->
+                        <div id="tab-video" class="tab-content grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="mp4" data-desc="转为 MP4 (H.264)">
+                                <span class="block text-xs text-primary font-mono mb-1">H.264</span>
+                                <div class="font-semibold text-white group-hover:text-primary transition-colors">转为 MP4</div>
+                                <div class="text-xs text-slate-500 mt-1">兼容性最佳通用格式</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="webm" data-desc="转为 WebM (VP9)">
+                                <span class="block text-xs text-secondary font-mono mb-1">VP9</span>
+                                <div class="font-semibold text-white group-hover:text-secondary transition-colors">转为 WebM</div>
+                                <div class="text-xs text-slate-500 mt-1">Web 高效视频格式</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="mkv" data-desc="转为 MKV">
+                                <span class="block text-xs text-green-500 font-mono mb-1">Matroska</span>
+                                <div class="font-semibold text-white group-hover:text-green-400 transition-colors">转为 MKV</div>
+                                <div class="text-xs text-slate-500 mt-1">支持多音轨/字幕</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="avi" data-desc="转为 AVI">
+                                <span class="block text-xs text-yellow-500 font-mono mb-1">AVI</span>
+                                <div class="font-semibold text-white group-hover:text-yellow-400 transition-colors">转为 AVI</div>
+                                <div class="text-xs text-slate-500 mt-1">旧设备兼容</div>
+                            </button>
+                             <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="ogv" data-desc="转为 OGV">
+                                <span class="block text-xs text-orange-500 font-mono mb-1">Theora</span>
+                                <div class="font-semibold text-white group-hover:text-orange-400 transition-colors">转为 OGV</div>
+                                <div class="text-xs text-slate-500 mt-1">开源视频编码</div>
+                            </button>
+                        </div>
+
+                        <!-- Audio Tab -->
+                        <div id="tab-audio" class="tab-content hidden grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="mp3" data-desc="提取 MP3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">MP3</span>
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+                                </div>
+                                <div class="font-semibold text-white group-hover:text-primary transition-colors">提取 MP3</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="aac" data-desc="提取 AAC">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">M4A</span>
+                                </div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition-colors">提取 AAC</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="wav" data-desc="提取 WAV (无损)">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs bg-slate-500/20 text-slate-300 px-1.5 py-0.5 rounded">WAV</span>
+                                </div>
+                                <div class="font-semibold text-white group-hover:text-slate-300 transition-colors">提取 WAV (无损)</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="flac" data-desc="提取 FLAC">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">FLAC</span>
+                                </div>
+                                <div class="font-semibold text-white group-hover:text-green-400 transition-colors">提取 FLAC</div>
+                            </button>
+                             <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="ogg" data-desc="提取 OGG">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded">OGG</span>
+                                </div>
+                                <div class="font-semibold text-white group-hover:text-orange-400 transition-colors">提取 OGG Vorbis</div>
+                            </button>
+                        </div>
+
+                        <!-- Image Tab -->
+                        <div id="tab-image" class="tab-content hidden grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center group" data-action="selectPreset" data-format="jpg" data-desc="转换为 JPG">
+                                <div class="font-bold text-2xl text-slate-500 group-hover:text-white mb-2">JPG</div>
+                                <div class="text-xs text-slate-400">截图/转换</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center group" data-action="selectPreset" data-format="png" data-desc="转换为 PNG">
+                                <div class="font-bold text-2xl text-slate-500 group-hover:text-white mb-2">PNG</div>
+                                <div class="text-xs text-slate-400">截图/转换</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center group" data-action="selectPreset" data-format="webp" data-desc="转换为 WebP">
+                                <div class="font-bold text-2xl text-slate-500 group-hover:text-white mb-2">WebP</div>
+                                <div class="text-xs text-slate-400">高效图片</div>
+                            </button>
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center group" data-action="selectPreset" data-format="ico" data-desc="生成 ICO 图标">
+                                <div class="font-bold text-2xl text-slate-500 group-hover:text-white mb-2">ICO</div>
+                                <div class="text-xs text-slate-400">图标生成</div>
+                            </button>
+                        </div>
+
+                        <!-- Tools Tab -->
+                        <div id="tab-tools" class="tab-content hidden grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group relative overflow-hidden" data-action="selectPreset" data-format="gif" data-desc="生成高质量 GIF">
+                                <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span class="text-xs text-purple-400 font-bold tracking-wider mb-1 block">GIF MAKER</span>
+                                <div class="font-semibold text-white">生成 GIF 动图</div>
+                                <div class="text-xs text-slate-500 mt-1">优化调色板・全时长</div>
+                            </button>
+                            
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="mute" data-desc="静音处理">
+                                <span class="text-xs text-red-400 font-bold tracking-wider mb-1 block">MUTE</span>
+                                <div class="font-semibold text-white">移除音轨 (静音)</div>
+                            </button>
+
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="compress" data-desc="视频压缩">
+                                <span class="text-xs text-blue-400 font-bold tracking-wider mb-1 block">COMPRESS</span>
+                                <div class="font-semibold text-white">视频压缩</div>
+                                <div class="text-xs text-slate-500 mt-1">减小体积・保留画质</div>
+                            </button>
+
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="speed_2x" data-desc="2.0x 倍速处理">
+                                <span class="text-xs text-yellow-400 font-bold tracking-wider mb-1 block">SPEED UP</span>
+                                <div class="font-semibold text-white">2.0x 倍速播放</div>
+                            </button>
+
+                            <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="speed_0.5x" data-desc="0.5x 慢放处理">
+                                <span class="text-xs text-yellow-400 font-bold tracking-wider mb-1 block">SLOW DOWN</span>
+                                <div class="font-semibold text-white">0.5x 慢动作</div>
+                            </button>
+
+                             <button class="tool-card p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-left group" data-action="selectPreset" data-format="bw" data-desc="黑白滤镜">
+                                <span class="text-xs text-slate-400 font-bold tracking-wider mb-1 block">FILTER</span>
+                                <div class="font-semibold text-white">黑白滤镜</div>
+                            </button>
+                        </div>
+
+                        <!-- AI Tab -->
+                        <div id="tab-ai" class="tab-content hidden flex flex-col h-full gap-4">
+                            <!-- Mode Switcher -->
+                            <div class="flex bg-slate-800/50 p-1 rounded-lg">
+                                <button id="ai-mode-auto" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-slate-700 text-white shadow-sm transition-all">AI 智能生成</button>
+                                <button id="ai-mode-manual" class="flex-1 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all">自定义命令</button>
+                            </div>
+
+                            <!-- Auto Mode -->
+                            <div id="ai-panel-auto" class="flex flex-col gap-4 h-full">
+                                <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex gap-3">
+                                    <div class="text-blue-400 mt-1">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <div class="text-sm text-slate-300">
+                                        输入自然语言指令，Gemini AI 将自动为您生成复杂的 FFmpeg 命令。例如："把视频的前5秒变成黑白并倒放"。
+                                    </div>
+                                </div>
+                                <textarea 
+                                    id="ai-prompt" 
+                                    class="w-full flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none resize-none"
+                                    placeholder="描述您的需求..."
+                                ></textarea>
+                                <button id="ai-generate-btn" class="w-full bg-gradient-to-r from-secondary to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-purple-900/20 transition-all flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                    </svg>
+                                    <span>智能分析并执行</span>
+                                </button>
+                            </div>
+
+                            <!-- Manual Mode -->
+                            <div id="ai-panel-manual" class="hidden flex flex-col gap-4 h-full">
+                                <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex gap-3">
+                                    <div class="text-yellow-400 mt-1">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                                    </div>
+                                    <div class="text-sm text-slate-300">
+                                        直接输入 JSON 格式的 FFmpeg 参数。适用于高级用户。
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+                                    <div class="text-xs text-slate-400 mb-2">📋 提示词模板 (可复制给 ChatGPT 使用):</div>
+                                    <pre class="text-[10px] text-slate-500 font-mono bg-black/20 p-2 rounded overflow-x-auto whitespace-pre-wrap select-all">You are an expert in FFmpeg. Return ONLY a JSON object containing the argument array and output extension.
+Format: { "args": ["-c:v", "libx264", ...], "outputExt": "mp4" }
+Input file is always named 'input.${fileType}'. Output file is 'output.{ext}'.
+Do NOT include '-i input' or output filename in args.
+Do NOT use Markdown. Just JSON.
+Request: ${prompt}</pre>
+                                </div>
+
+                                <textarea 
+                                    id="manual-json-input" 
+                                    class="w-full flex-1 bg-slate-950 border border-slate-700 rounded-lg p-4 text-xs font-mono text-green-400 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none resize-none"
+                                    placeholder='{
+    "args": ["-c:v", "libx264", "-crf", "23"],
+    "outputExt": "mp4"
+}'
+                                ></textarea>
+                                <button id="manual-run-btn" class="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-medium py-3 rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <span>执行自定义命令</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AI Config Modal -->
+                        <div id="ai-config-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                            <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+                                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    AI 配置
+                                </h3>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-xs text-slate-400 mb-1">Gemini API Key</label>
+                                    <input type="password" id="ai-api-key-input" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:border-secondary outline-none" placeholder="输入您的 API Key">
+                                    <p class="text-[10px] text-slate-500 mt-1">Key 将仅保存在您的浏览器本地存储中。</p>
+                                </div>
+
+                                <div class="flex justify-end gap-2">
+                                    <button id="ai-config-cancel" class="px-4 py-2 rounded text-sm text-slate-300 hover:bg-slate-800">取消</button>
+                                    <button id="ai-config-save" class="px-4 py-2 rounded text-sm bg-secondary hover:bg-purple-600 text-white font-medium">保存并继续</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Confirmation Modal -->
+                        <div id="ai-confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                            <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-lg shadow-2xl">
+                                <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    确认 AI 指令
+                                </h3>
+                                <p class="text-sm text-slate-400 mb-4">AI 已生成以下 FFmpeg 命令，您可以手动修改它。</p>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-xs text-slate-400 mb-1">您的提示词</label>
+                                    <div id="ai-confirm-prompt" class="text-sm text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50 italic"></div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-xs text-slate-400 mb-1">生成的参数 (JSON 格式)</label>
+                                    <textarea id="ai-confirm-args" class="w-full h-32 bg-slate-950 border border-slate-700 rounded px-3 py-2 text-xs font-mono text-green-400 focus:border-green-500 outline-none resize-none"></textarea>
+                                    <p class="text-[10px] text-slate-500 mt-1">请确保 JSON 格式正确，包含 "args" 数组和 "outputExt"。</p>
+                                </div>
+
+                                <div class="flex justify-end gap-2">
+                                    <button id="ai-confirm-cancel" class="px-4 py-2 rounded text-sm text-slate-300 hover:bg-slate-800">取消</button>
+                                    <button id="ai-confirm-run" class="px-4 py-2 rounded text-sm bg-green-600 hover:bg-green-700 text-white font-medium flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        执行命令
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Bar (Bottom of tools) -->
+                    <div id="action-bar" class="p-4 border-t border-white/5 bg-slate-900/40 flex items-center justify-between">
+                         <div class="flex items-center gap-3">
+                             <div class="text-xs text-slate-500 uppercase tracking-wider font-bold">当前任务:</div>
+                             <div id="selected-task-name" class="text-sm text-white font-medium">未选择</div>
+                         </div>
+                         <button id="start-btn" disabled class="bg-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
+                             <span>开始处理</span>
+                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                         </button>
+                    </div>
+                </div>
+
+                <!-- Status Panel (Right - 4 cols) -->
+                <div class="lg:col-span-4 flex flex-col gap-6 h-full">
+                    
+                    <!-- Terminal -->
+                    <div class="glass rounded-2xl p-4 flex flex-col h-64 lg:h-auto lg:flex-1 border border-slate-700/50">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                处理日志
+                            </h2>
+                            <span id="status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-slate-800 text-slate-500 border border-slate-700">空闲</span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-3 relative h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="absolute top-0 left-0 h-full bg-primary transition-all duration-300 w-0 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                        </div>
+
+                        <!-- Log Output -->
+                        <div id="terminal-logs" class="flex-1 bg-black/60 rounded-lg p-3 font-mono text-[10px] sm:text-xs text-slate-400 overflow-y-auto border border-slate-800 shadow-inner scroll-smooth leading-relaxed">
+                            <div class="opacity-40 italic">等待任务指令...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
+            <div id="result-area" class="hidden glass rounded-2xl p-8 text-center border border-green-500/30 bg-green-900/10 backdrop-blur-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
+                
+                <h3 class="text-xl font-bold text-white mb-2">🎉 处理完成!</h3>
+                <p class="text-slate-400 mb-6 text-sm">您的文件已准备就绪</p>
+                
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a id="download-btn" href="#" download class="bg-white text-slate-900 hover:bg-slate-200 px-6 py-2.5 rounded-lg font-bold transition-colors flex items-center gap-2 text-sm shadow-lg shadow-white/10">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        下载文件
+                    </a>
+                    <button id="reset-btn" class="text-slate-400 hover:text-white px-6 py-2.5 rounded-lg font-medium transition-colors text-sm border border-transparent hover:border-slate-600">处理新文件</button>
+                </div>
+                
+                <!-- Previews -->
+                <div id="video-preview-container" class="mt-8 hidden max-w-lg mx-auto rounded-lg overflow-hidden border border-slate-700 shadow-2xl bg-black">
+                    <video id="video-preview" controls class="w-full"></video>
+                </div>
+                <div id="image-preview-container" class="mt-8 hidden max-w-sm mx-auto rounded-lg overflow-hidden border border-slate-700 shadow-2xl bg-black/50 p-2">
+                    <img id="image-preview" class="w-full h-auto object-contain rounded" />
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- INLINED APPLICATION LOGIC -->
+    <script type="module">
+        import { FFmpeg } from '@ffmpeg/ffmpeg';
+        import { toBlobURL } from '@ffmpeg/util';
+        import { GoogleGenAI } from "@google/genai";
+
+        // ==========================================
+        // UTILS
+        // ==========================================
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        // ==========================================
+        // SERVICES
+        // ==========================================
+        
+        // --- FFmpeg Service ---
+        const CORE_VERSION = '0.12.10';
+        const CORE_URL = `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.js`;
+        const WASM_URL = `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.wasm`;
+        const FFMPEG_WORKER_URL = `https://unpkg.com/@ffmpeg/ffmpeg@${CORE_VERSION}/dist/esm/worker.js`;
+
+        class FFmpegService {
+            constructor() {
+                this.ffmpeg = new FFmpeg();
+                this.loaded = false;
+                this.onLog = null;
+                this.onProgress = null;
+            }
+
+            async load() {
+                if (this.loaded) return;
+
+                this._log('🚀 正在初始化转换引擎...', true);
+                
+                this.ffmpeg.on('log', ({ message }) => {
+                    // Filter useless logs to keep UI clean
+                    if (message.includes('Input #') || message.includes('Output #') || message.includes('Error') || message.includes('Stream #')) {
+                        this._log(`[Core] ${message}`);
+                    }
+                });
+
+                this.ffmpeg.on('progress', ({ progress }) => {
+                    if (this.onProgress) this.onProgress(progress * 100);
+                });
+
+                try {
+                    // Use Blob for Worker to handle CORS/Module issues
+                    const workerBlob = new Blob([`import "${FFMPEG_WORKER_URL}";`], { type: 'application/javascript' });
+                    const workerURL = URL.createObjectURL(workerBlob);
+                    
+                    await this.ffmpeg.load({
+                        coreURL: await toBlobURL(CORE_URL, 'text/javascript'),
+                        wasmURL: await toBlobURL(WASM_URL, 'application/wasm'),
+                        classWorkerURL: workerURL, 
+                    });
+                    
+                    this.loaded = true;
+                    this._log('✅ 引擎加载完毕，就绪。', true);
+                    document.getElementById('engine-status-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
+                } catch (error) {
+                    console.error('FFmpeg Load Error:', error);
+                    this._log(`❌ 引擎启动失败: ${error.message}`, true);
+                    document.getElementById('engine-status-dot').className = "w-2 h-2 rounded-full bg-red-500";
+                    throw new Error('Failed to load media engine.');
+                }
+            }
+
+            _log(msg, force = false) {
+                if (this.onLog) this.onLog(msg);
+            }
+
+            async cleanup(fileNames = []) {
+                if (!this.loaded) return;
+                for (const name of fileNames) {
+                    try {
+                        await this.ffmpeg.deleteFile(name);
+                    } catch (e) {
+                        // Ignore if file doesn't exist
+                    }
+                }
+            }
+
+            async convert(inputFile, args, outputExt) {
+                if (!this.loaded) await this.load();
+
+                // Safe filenames
+                const inputName = 'input.' + inputFile.name.split('.').pop();
+                let outputName = `output.${outputExt}`;
+                
+                // Aggressive cleanup before start
+                await this.cleanup([inputName, outputName]);
+                
+                this._log(`📦 正在写入文件: ${inputName} (${formatBytes(inputFile.size)})`);
+                
+                // Write File
+                try {
+                    const fileBuffer = await inputFile.arrayBuffer();
+                    await this.ffmpeg.writeFile(inputName, new Uint8Array(fileBuffer));
+                } catch (e) {
+                    this._log(`❌ 内存溢出或写入失败: ${e.message}`);
+                    throw e;
+                }
+
+                // Prepare args: Always overwrite (-y)
+                const finalArgs = ['-y', '-i', inputName, ...args, outputName];
+                
+                this._log(`🔨 执行指令: ffmpeg ${finalArgs.join(' ')}`);
+                
+                // Execute
+                try {
+                    await this.ffmpeg.exec(finalArgs);
+                } catch (e) {
+                     // Check for common WASM OOM errors
+                     if (e.message && e.message.includes('memory')) {
+                         throw new Error("文件过大或转换参数过于复杂，导致内存溢出。请尝试较小的文件。");
+                     }
+                     throw e;
+                }
+
+                this._log('💾 正在读取输出文件...');
+                
+                // Read Output
+                let data;
+                try {
+                     data = await this.ffmpeg.readFile(outputName);
+                } catch (e) {
+                    throw new Error("无法生成输出文件。可能转换失败或编码不兼容。");
+                }
+
+                // Cleanup after success
+                await this.cleanup([inputName]);
+
+                return {
+                    data,
+                    url: URL.createObjectURL(new Blob([data.buffer], { type: this._getMimeType(outputExt) })),
+                    filename: `${inputFile.name.split('.')[0]}_converted.${outputExt}`
+                };
+            }
+
+            _getMimeType(ext) {
+                const map = {
+                    'mp4': 'video/mp4', 'webm': 'video/webm', 'mkv': 'video/x-matroska',
+                    'avi': 'video/x-msvideo', 'ogv': 'video/ogg',
+                    'mp3': 'audio/mpeg', 'aac': 'audio/aac', 'wav': 'audio/wav',
+                    'flac': 'audio/flac', 'ogg': 'audio/ogg',
+                    'jpg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp', 'ico': 'image/x-icon',
+                    'gif': 'image/gif'
+                };
+                return map[ext] || 'application/octet-stream';
+            }
+        }
+
+        // --- Gemini Service ---
+        class GeminiService {
+            constructor() {
+                this.apiKey = localStorage.getItem('gemini_api_key') || '';
+                this.client = this.apiKey ? new GoogleGenAI({ apiKey: this.apiKey }) : null;
+            }
+
+            async generateCommand(prompt, fileType) {
+                // Check for API Key first
+                if (!this.client) {
+                    return new Promise((resolve, reject) => {
+                        const modal = document.getElementById('ai-config-modal');
+                        const input = document.getElementById('ai-api-key-input');
+                        const saveBtn = document.getElementById('ai-config-save');
+                        const cancelBtn = document.getElementById('ai-config-cancel');
+
+                        // Pre-fill if exists (though client is null, maybe just re-initializing)
+                        input.value = localStorage.getItem('gemini_api_key') || '';
+
+                        modal.classList.remove('hidden');
+
+                        const cleanup = () => {
+                            saveBtn.removeEventListener('click', onSave);
+                            cancelBtn.removeEventListener('click', onCancel);
+                            modal.classList.add('hidden');
+                        };
+
+                        const onSave = () => {
+                            const key = input.value.trim();
+                            if (key) {
+                                this.apiKey = key;
+                                localStorage.setItem('gemini_api_key', key);
+                                this.client = new GoogleGenAI({ apiKey: this.apiKey });
+                                cleanup();
+                                // Retry generation recursively
+                                resolve(this.generateCommand(prompt, fileType));
+                            } else {
+                                alert("请输入有效的 API Key");
+                            }
+                        };
+
+                        const onCancel = () => {
+                            cleanup();
+                            reject(new Error("用户取消了 API Key 配置"));
+                        };
+
+                        saveBtn.addEventListener('click', onSave);
+                        cancelBtn.addEventListener('click', onCancel);
+                    });
+                }
+
+                const model = "gemini-2.5-flash";
+                const sysPrompt = `You are an expert in FFmpeg. Return ONLY a JSON object containing the argument array and output extension.
+                Format: { "args": ["-c:v", "libx264", ...], "outputExt": "mp4" }
+                Input file is always named 'input.${fileType}'. Output file is 'output.{ext}'.
+                Do NOT include '-i input' or output filename in args.
+                Do NOT use Markdown. Just JSON.
+                Request: ${prompt}`;
+
+                try {
+                    const response = await this.client.models.generateContent({
+                        model: model,
+                        contents: sysPrompt,
+                    });
+                    
+                    const text = response.text().replace(/```json|```/g, '').trim();
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("AI Error", e);
+                    throw new Error("AI 无法解析指令，请重试。");
+                }
+            }
+        }
+
+        // ==========================================
+        // APP CONTROLLER
+        // ==========================================
+        class App {
+            constructor() {
+                this.ffmpegService = new FFmpegService();
+                this.geminiService = new GeminiService();
+                this.currentFile = null;
+                this.currentTask = null; // { type: 'preset'|'ai', ...data }
+                
+                this.elements = {
+                    dropZone: document.getElementById('drop-zone'),
+                    fileInput: document.getElementById('file-input'),
+                    uploadSection: document.getElementById('upload-section'),
+                    mainInterface: document.getElementById('main-interface'),
+                    fileName: document.getElementById('file-name'),
+                    fileSize: document.getElementById('file-size'),
+                    fileType: document.getElementById('file-type'),
+                    removeFileBtn: document.getElementById('remove-file-btn'),
+                    terminalLogs: document.getElementById('terminal-logs'),
+                    progressBar: document.getElementById('progress-bar'),
+                    statusBadge: document.getElementById('status-badge'),
+                    startBtn: document.getElementById('start-btn'),
+                    selectedTaskName: document.getElementById('selected-task-name'),
+                    downloadBtn: document.getElementById('download-btn'),
+                    resetBtn: document.getElementById('reset-btn'),
+                    resultArea: document.getElementById('result-area'),
+                    videoPreview: document.getElementById('video-preview'),
+                    imagePreview: document.getElementById('image-preview'),
+                    videoPreviewContainer: document.getElementById('video-preview-container'),
+                    imagePreviewContainer: document.getElementById('image-preview-container'),
+                    aiPrompt: document.getElementById('ai-prompt'),
+                    aiGenerateBtn: document.getElementById('ai-generate-btn'),
+                    aiModeAuto: document.getElementById('ai-mode-auto'),
+                    aiModeManual: document.getElementById('ai-mode-manual'),
+                    aiPanelAuto: document.getElementById('ai-panel-auto'),
+                    aiPanelManual: document.getElementById('ai-panel-manual'),
+                    manualJsonInput: document.getElementById('manual-json-input'),
+                    manualRunBtn: document.getElementById('manual-run-btn')
+                };
+
+                this.init();
+            }
+
+            init() {
+                // Attach Logger
+                this.ffmpegService.onLog = (msg) => this.log(msg);
+                this.ffmpegService.onProgress = (pct) => {
+                    this.elements.progressBar.style.width = `${pct}%`;
+                    this.elements.statusBadge.textContent = `处理中 ${Math.round(pct)}%`;
+                };
+
+                // AI Mode Switcher
+                this.elements.aiModeAuto.addEventListener('click', () => this.switchAIMode('auto'));
+                this.elements.aiModeManual.addEventListener('click', () => this.switchAIMode('manual'));
+
+                // Manual Run
+                this.elements.manualRunBtn.addEventListener('click', () => this.handleManualRun());
+
+                // File Upload
+                this.elements.dropZone.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'INPUT') this.elements.fileInput.click();
+                });
+                this.elements.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); this.elements.dropZone.classList.add('border-primary'); });
+                this.elements.dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); this.elements.dropZone.classList.remove('border-primary'); });
+                this.elements.dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.elements.dropZone.classList.remove('border-primary');
+                    if (e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0]);
+                });
+                this.elements.fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length) this.handleFile(e.target.files[0]);
+                });
+
+                // Remove File
+                this.elements.removeFileBtn.addEventListener('click', () => location.reload());
+                this.elements.resetBtn.addEventListener('click', () => location.reload());
+
+                // Start Button
+                this.elements.startBtn.addEventListener('click', () => this.executeTask());
+
+                // Tabs
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchTab(e.target));
+                });
+
+                // Tool Presets (Delegation)
+                document.addEventListener('click', (e) => {
+                    const card = e.target.closest('.tool-card');
+                    if (card && card.dataset.action === 'selectPreset') {
+                        this.selectPreset(card.dataset.format, card.dataset.desc, card);
+                    }
+                });
+
+                // AI Button
+                this.elements.aiGenerateBtn.addEventListener('click', () => this.handleAIRequest());
+            }
+
+            async handleFile(file) {
+                this.currentFile = file;
+                
+                // Switch UI
+                this.elements.uploadSection.classList.add('hidden');
+                this.elements.mainInterface.classList.remove('hidden');
+                
+                // Update Info
+                this.elements.fileName.textContent = file.name;
+                this.elements.fileSize.textContent = formatBytes(file.size);
+                this.elements.fileType.textContent = file.type || 'Unknown';
+
+                // Preload Engine
+                this.log('📂 文件已加载。请选择转换模式。');
+                this.ffmpegService.load().catch(() => {});
+            }
+
+            switchTab(btn) {
+                // Clear active states
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                
+                // Set active
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+
+                // Clear task selection on tab switch to avoid confusion
+                this.clearSelection();
+            }
+
+            clearSelection() {
+                this.currentTask = null;
+                document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('selected'));
+                this.elements.selectedTaskName.textContent = "未选择";
+                this.elements.startBtn.disabled = true;
+            }
+
+            selectPreset(format, description, cardElement) {
+                // Visual selection
+                document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('selected'));
+                cardElement.classList.add('selected');
+
+                // Set Task
+                this.currentTask = {
+                    type: 'preset',
+                    format,
+                    description
+                };
+
+                // Update Action Bar
+                this.elements.selectedTaskName.textContent = description;
+                this.elements.startBtn.disabled = false;
+            }
+
+            switchAIMode(mode) {
+                if (mode === 'auto') {
+                    this.elements.aiModeAuto.classList.replace('text-slate-400', 'text-white');
+                    this.elements.aiModeAuto.classList.replace('hover:text-white', 'bg-slate-700');
+                    this.elements.aiModeAuto.classList.add('bg-slate-700', 'shadow-sm');
+                    
+                    this.elements.aiModeManual.classList.replace('text-white', 'text-slate-400');
+                    this.elements.aiModeManual.classList.replace('bg-slate-700', 'hover:text-white');
+                    this.elements.aiModeManual.classList.remove('bg-slate-700', 'shadow-sm');
+
+                    this.elements.aiPanelAuto.classList.remove('hidden');
+                    this.elements.aiPanelManual.classList.add('hidden');
+                } else {
+                    this.elements.aiModeManual.classList.replace('text-slate-400', 'text-white');
+                    this.elements.aiModeManual.classList.replace('hover:text-white', 'bg-slate-700');
+                    this.elements.aiModeManual.classList.add('bg-slate-700', 'shadow-sm');
+
+                    this.elements.aiModeAuto.classList.replace('text-white', 'text-slate-400');
+                    this.elements.aiModeAuto.classList.replace('bg-slate-700', 'hover:text-white');
+                    this.elements.aiModeAuto.classList.remove('bg-slate-700', 'shadow-sm');
+
+                    this.elements.aiPanelManual.classList.remove('hidden');
+                    this.elements.aiPanelAuto.classList.add('hidden');
+                }
+            }
+
+            handleManualRun() {
+                try {
+                    const jsonStr = this.elements.manualJsonInput.value.trim();
+                    if (!jsonStr) return;
+
+                    const command = JSON.parse(jsonStr);
+                    if (!command.args || !Array.isArray(command.args) || !command.outputExt) {
+                        throw new Error('JSON 格式不正确。必须包含 "args" (数组) 和 "outputExt" (字符串)。');
+                    }
+
+                    this.currentTask = {
+                        type: 'ai', // Reuse AI type logic as it expects command object
+                        command: command,
+                        description: '自定义命令'
+                    };
+
+                    this.elements.selectedTaskName.textContent = '自定义命令';
+                    this.elements.startBtn.disabled = false;
+                    this.log('✅ 自定义指令已加载! 点击“开始处理”执行。');
+                    this.executeTask();
+
+                } catch (e) {
+                    alert("JSON 解析错误: " + e.message);
+                }
+            }
+
+            async handleAIRequest() {
+                const prompt = this.elements.aiPrompt.value.trim();
+                if (!prompt) return;
+
+                this.elements.aiGenerateBtn.disabled = true;
+                this.elements.aiGenerateBtn.innerText = "正在分析...";
+                this.log(`🤖 AI 正在分析指令: "${prompt}"...`);
+
+                try {
+                    const ext = this.currentFile.name.split('.').pop();
+                    const command = await this.geminiService.generateCommand(prompt, ext);
+                    
+                    // Show Confirmation Modal
+                    const confirmModal = document.getElementById('ai-confirm-modal');
+                    const promptDisplay = document.getElementById('ai-confirm-prompt');
+                    const argsInput = document.getElementById('ai-confirm-args');
+                    const runBtn = document.getElementById('ai-confirm-run');
+                    const cancelBtn = document.getElementById('ai-confirm-cancel');
+
+                    promptDisplay.textContent = prompt;
+                    argsInput.value = JSON.stringify(command, null, 2);
+                    confirmModal.classList.remove('hidden');
+
+                    // Handle Modal Actions
+                    const cleanup = () => {
+                        runBtn.replaceWith(runBtn.cloneNode(true)); // Remove listeners
+                        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                        confirmModal.classList.add('hidden');
+                        this.elements.aiGenerateBtn.disabled = false;
+                        this.elements.aiGenerateBtn.innerHTML = `
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>智能分析并执行</span>`;
+                    };
+
+                    // Re-select buttons after clone
+                    document.getElementById('ai-confirm-run').addEventListener('click', () => {
+                        try {
+                            const finalCommand = JSON.parse(document.getElementById('ai-confirm-args').value);
+                            
+                            this.currentTask = {
+                                type: 'ai',
+                                command: finalCommand,
+                                description: `AI: ${prompt}`
+                            };
+
+                            this.elements.selectedTaskName.textContent = `AI: ${prompt}`;
+                            this.elements.startBtn.disabled = false;
+                            this.log(`✅ AI 指令已确认! 点击“开始处理”执行。`);
+                            
+                            // Auto start? Or let user click start? Let's let user click start as per flow.
+                            // Actually user might expect it to run. But let's stick to "Ready to start" pattern.
+                            // Or we can just run it. The button says "执行命令". Let's run it.
+                            this.executeTask();
+                            
+                            cleanup();
+                        } catch (e) {
+                            alert("JSON 格式错误: " + e.message);
+                        }
+                    });
+
+                    document.getElementById('ai-confirm-cancel').addEventListener('click', () => {
+                        this.log(`🚫 用户取消了 AI 指令。`);
+                        cleanup();
+                    });
+
+                } catch (e) {
+                    this.log(`❌ AI 错误: ${e.message}`);
+                    this.elements.aiGenerateBtn.disabled = false;
+                    this.elements.aiGenerateBtn.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>智能分析并执行</span>`;
+                }
+            }
+
+            async executeTask() {
+                if (!this.currentTask || !this.currentFile) return;
+
+                const task = this.currentTask;
+                this.elements.startBtn.disabled = true;
+                this.elements.progressBar.style.width = '0%';
+                this.elements.statusBadge.textContent = '初始化';
+                this.elements.resultArea.classList.add('hidden');
+                
+                try {
+                    let args = [];
+                    let outputExt = '';
+
+                    if (task.type === 'preset') {
+                        outputExt = task.format;
+                        // Special Logic for GIF and Tools
+                        switch(task.format) {
+                            case 'gif':
+                                // Optimized GIF: FPS 12, Scale 480p, Split Palette
+                                args = [
+                                    '-vf', 'fps=12,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse'
+                                ];
+                                break;
+                            case 'mute':
+                                outputExt = 'mp4';
+                                args = ['-c:v', 'copy', '-an'];
+                                break;
+                            case 'compress':
+                                outputExt = 'mp4';
+                                args = ['-vcodec', 'libx264', '-crf', '28'];
+                                break;
+                            case 'speed_2x':
+                                outputExt = 'mp4';
+                                // filter_complex for audio/video speed
+                                args = ['-filter_complex', '[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]', '-map', '[v]', '-map', '[a]'];
+                                break;
+                             case 'speed_0.5x':
+                                outputExt = 'mp4';
+                                args = ['-filter_complex', '[0:v]setpts=2.0*PTS[v];[0:a]atempo=0.5[a]', '-map', '[v]', '-map', '[a]'];
+                                break;
+                            case 'bw':
+                                outputExt = 'mp4';
+                                args = ['-vf', 'hue=s=0'];
+                                break;
+                            case 'webm':
+                                // VP9 Optimization for speed/memory
+                                args = ['-c:v', 'libvpx-vp9', '-cpu-used', '4', '-deadline', 'realtime']; 
+                                break;
+                            default:
+                                // Standard conversions usually just need extension change or specific codecs
+                                if (['mp4','mkv','avi','mov'].includes(task.format)) {
+                                    args = ['-c:v', 'libx264', '-preset', 'ultrafast'];
+                                }
+                        }
+                    } else if (task.type === 'ai') {
+                        args = task.command.args;
+                        outputExt = task.command.outputExt;
+                    }
+
+                    const result = await this.ffmpegService.convert(this.currentFile, args, outputExt);
+                    
+                    this.showResult(result);
+                    this.log('✨ 任务全部完成!');
+                    this.elements.statusBadge.textContent = '完成';
+                    
+                } catch (error) {
+                    console.error(error);
+                    this.log(`❌ 错误: ${error.message}`);
+                    this.elements.statusBadge.textContent = '失败';
+                    this.elements.statusBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-red-900/50 text-red-400 border border-red-700";
+                    this.elements.startBtn.disabled = false;
+                }
+            }
+
+            showResult(result) {
+                this.elements.resultArea.classList.remove('hidden');
+                
+                // Setup Download
+                this.elements.downloadBtn.href = result.url;
+                this.elements.downloadBtn.download = result.filename;
+
+                // Preview
+                const ext = result.filename.split('.').pop().toLowerCase();
+                const isVideo = ['mp4', 'webm', 'ogv'].includes(ext);
+                const isImage = ['jpg', 'png', 'webp', 'gif', 'ico'].includes(ext);
+
+                this.elements.videoPreviewContainer.classList.add('hidden');
+                this.elements.imagePreviewContainer.classList.add('hidden');
+
+                if (isVideo) {
+                    this.elements.videoPreviewContainer.classList.remove('hidden');
+                    this.elements.videoPreview.src = result.url;
+                } else if (isImage) {
+                    this.elements.imagePreviewContainer.classList.remove('hidden');
+                    this.elements.imagePreview.src = result.url;
+                }
+                
+                // Scroll to result
+                this.elements.resultArea.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            log(msg) {
+                const div = document.createElement('div');
+                div.className = "mb-1 border-l-2 border-slate-700 pl-2 hover:bg-white/5 py-0.5";
+                
+                if (msg.includes('❌')) div.classList.add('text-red-400', 'border-red-500');
+                else if (msg.includes('✅') || msg.includes('✨')) div.classList.add('text-green-400', 'border-green-500');
+                else if (msg.includes('🚀') || msg.includes('📦')) div.classList.add('text-blue-400', 'border-blue-500');
+                
+                div.textContent = `> ${msg}`;
+                this.elements.terminalLogs.appendChild(div);
+                this.elements.terminalLogs.scrollTop = this.elements.terminalLogs.scrollHeight;
+            }
+        }
+
+        // Init App
+        window.app = new App();
+    </script>
+</body>
+</html>
